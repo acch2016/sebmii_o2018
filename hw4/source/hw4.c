@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2018 NXP Semiconductor, Inc.
+ * Copyright (c) 2017, NXP Semiconductor, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -27,9 +27,9 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
- 
+
 /**
- * @file    hw4.c
+ * @file    uart_rtos.c
  * @brief   Application entry point.
  */
 #include <stdio.h>
@@ -39,29 +39,38 @@
 #include "clock_config.h"
 #include "MK64F12.h"
 #include "fsl_debug_console.h"
-/* TODO: insert other include files here. */
+#include "FreeRTOS.h"
+#include "task.h"
+#include "fsl_port.h"
 
-/* TODO: insert other definitions and declarations here. */
+#include "rtos_uart.h"
 
-/*
- * @brief   Application entry point.
- */
-int main(void) {
+void uart_echo_task(void * args)
+{
+	rtos_uart_config_t config;
+	config.baudrate = 115200;
+	config.rx_pin = 16;
+	config.tx_pin = 17;
+	config.pin_mux = kPORT_MuxAlt3;
+	config.uart_number = rtos_uart0;
+	config.port = rtos_uart_portB;
+	rtos_uart_init(config);
+	uint8_t data;
+	for(;;)
+	{
+		rtos_uart_receive(rtos_uart0, &data, 1);
+		rtos_uart_send(rtos_uart0, &data, 1);
+	}
+}
 
-  	/* Init board hardware. */
-    BOARD_InitBootPins();
-    BOARD_InitBootClocks();
-    BOARD_InitBootPeripherals();
-  	/* Init FSL debug console. */
-    BOARD_InitDebugConsole();
+int main(void)
+{
 
-    PRINTF("Hello World\n");
+	BOARD_BootClockRUN();
 
-    /* Force the counter to be placed into memory. */
-    volatile static int i = 0 ;
-    /* Enter an infinite loop, just incrementing a counter. */
-    while(1) {
-        i++ ;
-    }
-    return 0 ;
+	xTaskCreate(uart_echo_task, "uart_echo_task", 110, NULL, 1, NULL);
+	vTaskStartScheduler();
+
+	for(;;);
+	return 0;
 }
