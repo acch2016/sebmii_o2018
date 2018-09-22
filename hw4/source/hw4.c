@@ -68,8 +68,14 @@ int main(void)
 
 	BOARD_BootClockRUN();
 
+	BOARD_InitBootPins();
+	BOARD_InitBootClocks();
+	BOARD_InitBootPeripherals();
+	BOARD_InitDebugConsole();
+PRINTF("hola_mundooo");
 	xTaskCreate(uart_echo_task, "uart_echo_task", 110, NULL, 1, NULL);
 	vTaskStartScheduler();
+
 
 	for(;;);
 	return 0;

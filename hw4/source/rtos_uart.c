@@ -111,7 +111,7 @@ rtos_uart_flag_t rtos_uart_send(rtos_uart_number_t uart_number, uint8_t * buffer
 		xSemaphoreTake(uart_handles[uart_number].mutex_tx, portMAX_DELAY);
 		UART_TransferSendNonBlocking(get_uart_base(uart_number), &uart_handles[uart_number].fsl_uart_handle, &xfer);
 
-		xSemaphoreTake(uart_handles[config.uart_number].tx_sem,portMAX_DELAY);
+		xSemaphoreTake(uart_handles[uart_number].tx_sem,portMAX_DELAY);
 
 		xSemaphoreGive(uart_handles[uart_number].mutex_tx);
 		flag = rtos_uart_sucess;
@@ -121,12 +121,21 @@ rtos_uart_flag_t rtos_uart_send(rtos_uart_number_t uart_number, uint8_t * buffer
 
 rtos_uart_flag_t rtos_uart_receive(rtos_uart_number_t uart_number, uint8_t * buffer, uint16_t lenght)
 {
-	if(uart_handles[uart_number].is_init)
-	{
-		xSemaphoreTake(uart_handles[uart_number].mutex_rx, portMAX_DELAY);
+    rtos_uart_flag_t flag = rtos_uart_fail;
+    uart_transfer_t xfer;
+    if(uart_handles[uart_number].is_init)
+    {
+        xfer.data= buffer;
+        xfer.dataSize = lenght;
+        xSemaphoreTake(uart_handles[uart_number].mutex_rx, portMAX_DELAY);
+        UART_TransferReceiveNonBlocking(get_uart_base(uart_number), &uart_handles[uart_number].fsl_uart_handle, &xfer, NULL);
 
-		xSemaphoreGive(uart_handles[uart_number].mutex_rx);
-	}
+        xSemaphoreTake(uart_handles[uart_number].rx_sem,portMAX_DELAY);
+
+        xSemaphoreGive(uart_handles[uart_number].mutex_rx);
+        flag = rtos_uart_sucess;
+    }
+    return flag;
 }
 
 
