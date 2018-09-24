@@ -43,6 +43,10 @@
 #include "task.h"
 #include "fsl_port.h"
 
+#define UART_APP
+
+#ifdef UART_APP
+
 #include "rtos_uart.h"
 
 void uart_echo_task(void * args)
@@ -80,3 +84,13 @@ PRINTF("hola_mundooo\n");
 	for(;;);
 	return 0;
 }
+
+#else
+
+#include "rtos_gpio.h"
+
+rtos_gpio_config_t conf;
+
+xEventGroupWaitBits(conf.);
+rtos_uart_flag_t rtos_gpio_wait_pin(rtos_gpio_portC);
+#endif

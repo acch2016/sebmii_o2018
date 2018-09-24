@@ -22,61 +22,72 @@ static inline void enable_port_clock(rtos_gpio_port_t);
 static inline UART_Type * get_gpio_base(rtos_gpio_t);
 static inline PORT_Type * get_port_base(rtos_gpio_port_t);
 
+#define EVENT_PORTA (1<<0)
+#define EVENT_PORTB (1<<1)
+#define EVENT_PORTC	(1<<2)
+#define EVENT_PORTD (1<<3)
+#define EVENT_PORTE (1<<4)
 
 typedef struct
 {
 	uint8_t is_init;
 //	gpio_handle_t fsl_gpio_handle;
+	EventGroupHandle_t events;
 //	SemaphoreHandle_t mutex_rx;
 //	SemaphoreHandle_t mutex_tx;
 //	SemaphoreHandle_t rx_sem;
 //	SemaphoreHandle_t tx_sem;
 }rtos_gpio_hanlde_t;
 
+rtos_gpio_hanlde_t gpio_handle;
 uint32_t pin;
 
 //static rtos_gpio_hanlde_t gpio_handles[NUMBER_OF_PORTS] = {0};
 
 void PORTA_IRQHandler(void)
 {
-//	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 	pin = GPIO_PortGetInterruptFlags(GPIOA);
 	PORT_ClearPinsInterruptFlags( PORTA, pin);
-	/*TODO xSemaphoreGiveFromISR( bin_semaphore, &xHigherPriorityTaskWoken );*/
 
-//	portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
+	xEventGroupSetBitsFromISR(gpio_handle.events, EVENT_PORTA, &xHigherPriorityTaskWoken);
+	portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
 }
 void PORTB_IRQHandler(void)
 {
-//	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 	pin = GPIO_PortGetInterruptFlags(GPIOB);
 	PORT_ClearPinsInterruptFlags( PORTB, pin);
 
-//	portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
+	xEventGroupSetBitsFromISR(gpio_handle.events, EVENT_PORTB, &xHigherPriorityTaskWoken);
+	portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
 }
 void PORTC_IRQHandler(void)
 {
-//	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 	pin = GPIO_PortGetInterruptFlags(GPIOC);
 	PORT_ClearPinsInterruptFlags( PORTC, pin);
 
-//	portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
+	xEventGroupSetBitsFromISR(gpio_handle.events, EVENT_PORTC, &xHigherPriorityTaskWoken);
+	portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
 }
 void PORTD_IRQHandler(void)
 {
-//	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 	pin = GPIO_PortGetInterruptFlags(GPIOD);
 	PORT_ClearPinsInterruptFlags( PORTD, pin);
 
-//	portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
+	xEventGroupSetBitsFromISR(gpio_handle.events, EVENT_PORTD, &xHigherPriorityTaskWoken);
+	portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
 }
 void PORTE_IRQHandler(void)
 {
-//	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 	pin = GPIO_PortGetInterruptFlags(GPIOE);
 	PORT_ClearPinsInterruptFlags( PORTE, pin);
 
-//	portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
+	xEventGroupSetBitsFromISR(gpio_handle.events, EVENT_PORTE, &xHigherPriorityTaskWoken);
+	portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
 }
 
 rtos_gpio_flag_t rtos_gpio_init(rtos_gpio_config_t config)

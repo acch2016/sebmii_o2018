@@ -24,5 +24,7 @@ typedef struct
 }rtos_gpio_config_t;
 
 rtos_gpio_flag_t rtos_gpio_init(rtos_gpio_config_t config);
+//TODO No estoy seguro que recibe esta funcion como argumentsos
+rtos_uart_flag_t rtos_gpio_wait_port_and_pin(rtos_gpio_config_t config, rtos_gpio_config_t config);
 
 #endif /* RTOS_GPIO_H_ */
