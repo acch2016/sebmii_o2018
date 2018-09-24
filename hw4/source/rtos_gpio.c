@@ -14,7 +14,7 @@
 #include "FreeRTOS.h"
 #include "semphr.h"
 
-/*TODO en este modulo no se necesita?*/
+/*TODO en este modulo no se necesita lo siguiente?*/
 //#define NUMBER_OF_PORTS (5)
 
 static inline void nvic_enable_irq_nvic_set_priority(rtos_gpio_port_t);
