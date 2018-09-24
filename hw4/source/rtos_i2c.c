@@ -67,17 +67,17 @@ static void i2c_master_callback(I2C_Type *base, i2c_master_handle_t *handle, sta
 		if(I2C0 == base)
 		{
 			xSemaphoreGiveFromISR(i2c_handles[rtos_i2c0].rx_sem, &xHigherPriorityTaskWoken);
-			g_MasterCompletionFlag = true;
+			g_MasterCompletionFlag = false;
 		}
 		else if(I2C1 == base)
 		{
 			xSemaphoreGiveFromISR(i2c_handles[rtos_i2c1].rx_sem, &xHigherPriorityTaskWoken);
-			g_MasterCompletionFlag = true;
+			g_MasterCompletionFlag = false;
 		}
 		else
 		{
 			xSemaphoreGiveFromISR(i2c_handles[rtos_i2c2].rx_sem, &xHigherPriorityTaskWoken);
-			g_MasterCompletionFlag = true;
+			g_MasterCompletionFlag = false;
 		}
 	}
 	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
@@ -90,6 +90,7 @@ rtos_i2c_flag_t rtos_i2c_init(rtos_i2c_config_t config)
 
 	rtos_i2c_flag_t retval = rtos_i2c_fail;
 	i2c_master_config_t masterConfig;
+
 	if(config.i2c_number < NUMBER_OF_SERIAL_PORTS)
 	{
 		if(!i2c_handles[config.i2c_number].is_init)
@@ -104,7 +105,6 @@ rtos_i2c_flag_t rtos_i2c_init(rtos_i2c_config_t config)
 			PORT_SetPinMux(get_port_base(config.i2c_port), config.scl_pin, config.pin_mux);
 			PORT_SetPinMux(get_port_base(config.i2c_port), config.sda_pin, config.pin_mux);
 
-			/*Get default configuration for master.*/
 			I2C_MasterGetDefaultConfig(&masterConfig);
 			masterConfig.baudRate_Bps =  config.baudrate;
 			masterConfig.enableMaster = true;
@@ -143,6 +143,7 @@ rtos_i2c_flag_t rtos_i2c_write(rtos_i2c_number_t i2c_number, uint32_t address, u
 {
 	rtos_i2c_flag_t flag = rtos_i2c_fail;
 	i2c_master_transfer_t masterXfer;
+
 	if(i2c_handles[i2c_number].is_init)
 	{
 		masterXfer.slaveAddress = SLAVE1;
@@ -155,10 +156,12 @@ rtos_i2c_flag_t rtos_i2c_write(rtos_i2c_number_t i2c_number, uint32_t address, u
 
 		xSemaphoreTake(i2c_handles[i2c_number].mutex_tx, portMAX_DELAY);
 		I2C_MasterTransferNonBlocking(get_i2c_base(i2c_number), &i2c_handles[i2c_number].fsl_i2c_handle, &masterXfer);
+
 		while (!g_MasterCompletionFlag)
-				{
-				}
-				g_MasterCompletionFlag = false;
+		{
+		}
+
+		g_MasterCompletionFlag = false;
 		xSemaphoreTake(i2c_handles[i2c_number].tx_sem, portMAX_DELAY);
 
 		xSemaphoreGive(i2c_handles[i2c_number].mutex_tx);

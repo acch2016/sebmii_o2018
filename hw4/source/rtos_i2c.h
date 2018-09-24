@@ -22,3 +22,7 @@ typedef struct
 	uint8_t scl_pin;
 	uint8_t sda_pin;
 }rtos_i2c_config_t;
+
+rtos_i2c_flag_t rtos_i2c_init(rtos_i2c_config_t config);
+rtos_i2c_flag_t rtos_i2c_write(rtos_i2c_number_t i2c_number, uint32_t address, uint8_t * txBuff, uint32_t BUFFER_SIZE);
+rtos_i2c_flag_t rtos_i2c_read(rtos_i2c_number_t i2c_number, uint32_t address, uint8_t* txBuff, uint32_t BUFFER_SIZE);
