@@ -122,6 +122,8 @@ void gpio_tooglePin_task(void * args)
 	for(;;)
 	{
 		rtos_gpio_wait_pin(config_SW2);
+//		el siguiente uso de recurso no tendria que ser rodeado por mutex ya que solo es un led el cuals seria encendido?
+		GPIO_TogglePinsOutput(GPIOB, 1 << 22); //LED
 	}
 }
 

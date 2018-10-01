@@ -104,7 +104,7 @@ rtos_gpio_flag_t rtos_gpio_init(rtos_gpio_config_t config)
 			//TODO en lugar de este binario sera utilizado un evento
 //			gpio_handles[config.gpio].binary_sem = xSemaphoreCreateBinary();
 			gpio_handles[config.gpio].events =  xEventGroupCreate();
-
+			gpio_handles[config.gpio].mutex = xSemaphoreCreateMutex();
 
 			port_pin_config_t port_input_config = { kPORT_PullDisable,
 					kPORT_FastSlewRate, kPORT_PassiveFilterDisable,
@@ -250,7 +250,7 @@ rtos_gpio_flag_t rtos_gpio_wait_pin(rtos_gpio_config_t config)
 
 		//TODO lo que sigue es la capa de aplicacion y deberia estar en el test
 //	GPIO_TogglePinsOutput(get_gpio_base(config.gpio),1<<21);
-		GPIO_TogglePinsOutput(GPIOB, 1 << 22); //LED
+
 
 		xEventGroupWaitBits(gpio_handles[config.gpio].events,
 		EVENT_PORTA | EVENT_PORTB | EVENT_PORTC | EVENT_PORTD | EVENT_PORTE,
