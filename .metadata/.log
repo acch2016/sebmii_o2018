@@ -1876,3 +1876,28 @@ java.lang.Exception: There is no member named ucStaticallyAllocated.
 
 !ENTRY com.crt.dsfdebug 1 0 2018-09-30 20:53:16.586
 !MESSAGE Telnet session connected on port 2333->40212 @ 127.0.0.1
+
+!ENTRY org.eclipse.egit.core 4 0 2018-09-30 21:02:54.249
+!MESSAGE An exception occurred during push on URI https://github.com/acch2016/sebmii_o2018.git: Preference node "https:\2f\2fgithub.com:443" has been removed.
+!STACK 0
+java.lang.IllegalStateException: Preference node "https:\2f\2fgithub.com:443" has been removed.
+	at org.eclipse.equinox.internal.security.storage.SecurePreferences.checkRemoved(SecurePreferences.java:356)
+	at org.eclipse.equinox.internal.security.storage.SecurePreferences.parent(SecurePreferences.java:75)
+	at org.eclipse.equinox.internal.security.storage.SecurePreferences.getRoot(SecurePreferences.java:137)
+	at org.eclipse.equinox.internal.security.storage.SecurePreferences.flush(SecurePreferences.java:181)
+	at org.eclipse.equinox.internal.security.storage.SecurePreferencesWrapper.flush(SecurePreferencesWrapper.java:50)
+	at org.eclipse.egit.core.securestorage.EGitSecureStore.clearCredentials(EGitSecureStore.java:112)
+	at org.eclipse.egit.ui.internal.SecureStoreUtils.clearCredentials(SecureStoreUtils.java:83)
+	at org.eclipse.egit.ui.internal.credentials.EGitCredentialsProvider.reset(EGitCredentialsProvider.java:139)
+	at org.eclipse.jgit.transport.TransportHttp.connect(TransportHttp.java:526)
+	at org.eclipse.jgit.transport.TransportHttp.openPush(TransportHttp.java:435)
+	at org.eclipse.jgit.transport.PushProcess.execute(PushProcess.java:160)
+	at org.eclipse.jgit.transport.Transport.push(Transport.java:1310)
+	at org.eclipse.jgit.api.PushCommand.call(PushCommand.java:169)
+	at org.eclipse.egit.core.op.PushOperation.run(PushOperation.java:215)
+	at org.eclipse.egit.ui.internal.push.PushJob.performJob(PushJob.java:84)
+	at org.eclipse.egit.ui.internal.jobs.RepositoryJob.run(RepositoryJob.java:57)
+	at org.eclipse.core.internal.jobs.Worker.run(Worker.java:56)
+
+!ENTRY org.eclipse.egit.ui 4 0 2018-09-30 21:02:54.251
+!MESSAGE Can't connect to any repository: https://github.com/acch2016/sebmii_o2018.git (Preference node "https:\2f\2fgithub.com:443" has been removed.)
