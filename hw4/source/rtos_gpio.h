@@ -30,4 +30,5 @@ rtos_gpio_flag_t rtos_gpio_init(rtos_gpio_config_t config);
 //TODO Esta función recibira la estructura tipo rtos_gpio_config_t de donde obtendria el pin y el puerto
 rtos_gpio_flag_t rtos_gpio_wait_pin(rtos_gpio_config_t config);
 //TODO Declarar aqui la otra función que controlará al LED
+rtos_gpio_flag_t rtos_gpio_toogle_pin(rtos_gpio_config_t config);
 #endif /* RTOS_GPIO_H_ */
