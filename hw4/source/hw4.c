@@ -43,6 +43,11 @@
 #include "task.h"
 #include "fsl_port.h"
 
+//#define UART_APP
+#define GPIO_APP
+
+#ifdef UART_APP
+
 #include "rtos_uart.h"
 
 void uart_echo_task(void * args)
@@ -80,3 +85,67 @@ PRINTF("hola_mundooo\n");
 	for(;;);
 	return 0;
 }
+
+#endif
+#ifdef GPIO_APP
+
+#include "rtos_gpio.h"
+
+void gpio_tooglePin_task(void * args)
+{
+//	rtos_gpio_config_t config_LED;
+	rtos_gpio_config_t config_SW2;
+
+	port_pin_config_t port_output_config =
+	{ kPORT_PullDisable, kPORT_FastSlewRate, kPORT_PassiveFilterDisable,
+			kPORT_OpenDrainDisable, kPORT_LowDriveStrength, kPORT_MuxAsGpio,
+			kPORT_UnlockRegister, };
+
+	gpio_pin_config_t gpio_output_config =
+	{ kGPIO_DigitalOutput, 1, };
+
+	CLOCK_EnableClock(kCLOCK_PortB);
+
+	PORT_SetPinConfig(PORTB, 22, &port_output_config);
+
+	GPIO_PinInit(GPIOB, 22, &gpio_output_config);
+
+//	config_LED.gpio = rtos_gpioB;
+//	config_LED.port = rtos_gpio_portB;
+//	config_LED.pin = 22;
+	config_SW2.gpio = rtos_gpioC;
+	config_SW2.port = rtos_gpio_portC;
+	config_SW2.pin = 6;
+//	rtos_gpio_init(config_LED);
+	rtos_gpio_init(config_SW2);
+
+	for(;;)
+	{
+		rtos_gpio_wait_pin(config_SW2);
+//		el siguiente uso de recurso no tendria que ser rodeado por mutex ya que solo es un led el cuals seria encendido?
+		GPIO_TogglePinsOutput(GPIOB, 1 << 22); //LED
+	}
+}
+
+
+int main(void)
+{
+
+	BOARD_BootClockRUN();
+
+	BOARD_InitBootPins();
+	BOARD_InitBootClocks();
+	BOARD_InitBootPeripherals();
+	BOARD_InitDebugConsole();
+PRINTF("hola_mundooo\n");
+	xTaskCreate(gpio_tooglePin_task, "gpio_tooglePin_task", 110, NULL, 1, NULL);
+	vTaskStartScheduler();
+
+
+	for(;;);
+	return 0;
+}
+
+
+#endif
+
