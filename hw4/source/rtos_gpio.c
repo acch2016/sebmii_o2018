@@ -15,7 +15,7 @@
 #include "semphr.h"
 #include "event_groups.h"
 
-/** TODO Se necesitan 5 estructuras tipo rtos_gpio_hanlde_t para que haya una por GPIOx **/
+/** Se necesitan 5 estructuras tipo rtos_gpio_hanlde_t para que haya una por GPIOx **/
 #define NUMBER_OF_GPIOS (5)
 
 #define EVENT_PORTA (1<<0)
@@ -30,13 +30,9 @@ typedef struct
 {
 	uint8_t is_init;
 	uint32_t interruptPin;
-//	gpio_handle_t fsl_gpio_handle;
 	EventGroupHandle_t events;
 	SemaphoreHandle_t mutex;
-//	SemaphoreHandle_t mutex_rx;
-//	SemaphoreHandle_t mutex_tx;
-//	SemaphoreHandle_t binary_sem;
-//	SemaphoreHandle_t tx_sem;
+
 }rtos_gpio_hanlde_t;
 
 static rtos_gpio_hanlde_t gpio_handles[NUMBER_OF_GPIOS] = {0};
@@ -45,7 +41,7 @@ static inline void nvic_enable_irq_nvic_set_priority(rtos_gpio_port_t);
 static inline void enable_port_clock(rtos_gpio_port_t);
 static inline GPIO_Type * get_gpio_base(rtos_gpio_t);
 static inline PORT_Type * get_port_base(rtos_gpio_port_t);
-rtos_gpio_hanlde_t get_rtos_gpio_handle(rtos_gpio_config_t config);
+//rtos_gpio_hanlde_t get_rtos_gpio_handle(rtos_gpio_config_t config);
 
 void PORTA_IRQHandler(void)
 {
@@ -101,8 +97,6 @@ rtos_gpio_flag_t rtos_gpio_init(rtos_gpio_config_t config)
 	{
 		if(!gpio_handles[config.gpio].is_init)
 		{
-			//TODO en lugar de este binario sera utilizado un evento
-//			gpio_handles[config.gpio].binary_sem = xSemaphoreCreateBinary();
 			gpio_handles[config.gpio].events =  xEventGroupCreate();
 			gpio_handles[config.gpio].mutex = xSemaphoreCreateMutex();
 
@@ -125,7 +119,6 @@ rtos_gpio_flag_t rtos_gpio_init(rtos_gpio_config_t config)
 //			TODO En el rtos_uart.c Aldana hace un if para seleccionar uart0 o 1.
 //			En este caso habria que ver si esto interfiere cuando se necesite inicializar varios pines
 			GPIO_PinInit(get_gpio_base(config.gpio), config.pin, &gpio_input_config);
-
 
 			gpio_handles[config.gpio].is_init = 1;
 			retval = rtos_gpio_sucess;
@@ -243,21 +236,12 @@ rtos_gpio_flag_t rtos_gpio_wait_pin(rtos_gpio_config_t config)
 	rtos_gpio_flag_t flag = rtos_gpio_fail;
 	if(gpio_handles[config.gpio].is_init)
 	{
-//	rtos_gpio_hanlde_t args = GET_ARGS(arg,rtos_gpio_hanlde_t);
-//	rtos_gpio_hanlde_t gpio_handles[config.gpio] =
-
 		xSemaphoreTake(gpio_handles[config.gpio].mutex, portMAX_DELAY);
-
-		//TODO lo que sigue es la capa de aplicacion y deberia estar en el test
-//	GPIO_TogglePinsOutput(get_gpio_base(config.gpio),1<<21);
-
 
 		xEventGroupWaitBits(gpio_handles[config.gpio].events,
 		EVENT_PORTA | EVENT_PORTB | EVENT_PORTC | EVENT_PORTD | EVENT_PORTE,
 		pdTRUE, pdFALSE, portMAX_DELAY);
 
-//		quiza no es necesario pasar toda la estructura
-//		xSemaphoreGive(gpio_handles[uart_number].mutex);
 		xSemaphoreGive(gpio_handles[config.gpio].mutex);
 	}
 	return flag;

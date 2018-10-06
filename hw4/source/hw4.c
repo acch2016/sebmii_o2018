@@ -44,7 +44,8 @@
 #include "fsl_port.h"
 
 //#define UART_APP
-#define GPIO_APP
+//#define GPIO_APP
+#define I2C_APP_ACCELEROMETER
 
 #ifdef UART_APP
 
@@ -125,6 +126,9 @@ void gpio_tooglePin_task(void * args)
 //		el siguiente uso de recurso no tendria que ser rodeado por mutex ya que solo es un led el cuals seria encendido?
 		GPIO_TogglePinsOutput(GPIOB, 1 << 22); //LED
 	}
+
+
+
 }
 
 
@@ -148,4 +152,84 @@ PRINTF("hola_mundooo\n");
 
 
 #endif
+#ifdef I2C_APP_ACCELEROMETER
 
+#include "rtos_i2c.h"
+
+void i2c_testAPP_task(void * args)
+{
+	rtos_i2c_config_t accel_config;
+	accel_config.baudrate = 100000;
+	accel_config.i2c_number = rtos_i2c0;
+	accel_config.i2c_port = rtos_i2c_portE;
+	accel_config.pin_config_struct.mux = kPORT_MuxAlt5;
+	accel_config.scl_pin = 24;
+	accel_config.sda_pin = 25;
+	rtos_i2c_init(accel_config);
+
+	uint8_t data_buffer = 0x01;
+	rtos_i2c_master_transf_config_t mXfer_config;
+	mXfer_config.slaveAddress = 0x1D;
+	mXfer_config.direction = kI2C_Write;
+	mXfer_config.subaddress = 0x2A;
+	mXfer_config.subaddressSize = 1;
+	mXfer_config.data = &data_buffer;
+	mXfer_config.dataSize = 1;
+	mXfer_config.flags = kI2C_TransferDefaultFlag;
+	rtos_i2c_master_transfer(rtos_i2c0, mXfer_config);
+
+	uint8_t buffer[6];
+	int16_t accelerometer[3];
+	float new0 = 0, new1 = 0, new2 = 0;
+
+	while (1)
+	{
+		mXfer_config.slaveAddress = 0x1D;
+		mXfer_config.direction = kI2C_Read;
+		mXfer_config.subaddress = 0x01;
+		mXfer_config.subaddressSize = 1;
+		mXfer_config.data = buffer;
+		mXfer_config.dataSize = 6;
+		mXfer_config.flags = kI2C_TransferDefaultFlag;
+		rtos_i2c_master_transfer(rtos_i2c0, mXfer_config);
+
+		accelerometer[0] = buffer[0] << 8 | buffer[1];
+		accelerometer[1] = buffer[2] << 8 | buffer[3];
+		accelerometer[2] = buffer[4] << 8 | buffer[5];
+
+//		new0 = (accelerometer[0] * (0.000244)) / 4;
+//		new1 = (accelerometer[1] * (0.000244)) / 4;
+//		new2 = (accelerometer[2] * (0.000244)) / 4;
+
+		PRINTF("x: %11d y: %11d z: %11d\n\r",accelerometer[0], accelerometer[1],accelerometer[2]);
+//		PRINTF("x: %11d y: %11d z: %11d\n\r",new0,new1,new2);
+	}
+
+}
+int main(void)
+{
+	BOARD_BootClockRUN();
+
+	BOARD_InitBootPins();
+	BOARD_InitBootClocks();
+	BOARD_InitBootPeripherals();
+	BOARD_InitDebugConsole();
+PRINTF("hola_mundooo\n");
+	xTaskCreate(i2c_testAPP_task, "i2c_testAPP_task", configMINIMAL_STACK_SIZE+110, NULL, configMAX_PRIORITIES, NULL);
+	vTaskStartScheduler();
+
+
+	for(;;);
+	return 0;
+}
+
+#endif
+#ifdef I2C_APP_RTC
+
+
+
+
+
+
+
+#endif

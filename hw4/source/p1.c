@@ -25,7 +25,8 @@
 #define SYSTEM_START_PRIORITY		(configMAX_PRIORITIES)
 #define MENU_MAIN_MENU				(0)
 #define MENU_MAIN_MENU_ERROR		(1)
-
+//#define MENU
+#ifdef MENU
 uint8_t old_data;
 uint8_t actual_menu;
 
@@ -141,3 +142,4 @@ int main (void)
     return 0 ;
 
 }
+#endif
