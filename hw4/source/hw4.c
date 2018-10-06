@@ -127,7 +127,7 @@ void gpio_tooglePin_task(void * args)
 	}
 }
 
-
+/*
 int main(void)
 {
 
@@ -145,7 +145,6 @@ PRINTF("hola_mundooo\n");
 	for(;;);
 	return 0;
 }
-
+*/
 
 #endif
-
