@@ -80,7 +80,7 @@ rtos_i2c_flag_t rtos_i2c_init(rtos_i2c_config_t config)
 					kPORT_OpenDrainDisable, kPORT_LowDriveStrength,
 					kPORT_MuxAlt2, kPORT_UnlockRegister, };
 
-			config_i2c.mux = config.pin_config_struct.mux;
+			config_i2c.mux = config.mux;
 
 			PORT_SetPinConfig(get_port_base(config.i2c_port), config.scl_pin, &config_i2c);// en la capa app pin2 portB
 			PORT_SetPinConfig(get_port_base(config.i2c_port), config.sda_pin, &config_i2c);// en la capa app pin3 portB
@@ -136,7 +136,7 @@ rtos_i2c_flag_t rtos_i2c_master_transfer(rtos_i2c_number_t i2c_number, rtos_i2c_
 		masterXfer.subaddressSize = masterXfer_config.subaddressSize;
 		masterXfer.data = masterXfer_config.data;
 		masterXfer.dataSize = masterXfer_config.dataSize;
-		masterXfer.flags = masterXfer_config.flags;
+		masterXfer.flags = kI2C_TransferDefaultFlag;
 
 		xSemaphoreTake(i2c_handles[i2c_number].mutex, portMAX_DELAY);
 		I2C_MasterTransferNonBlocking(get_i2c_base(i2c_number), &i2c_handles[i2c_number].fsl_i2c_handle, &masterXfer);

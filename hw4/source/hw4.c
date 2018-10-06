@@ -44,9 +44,9 @@
 #include "fsl_port.h"
 
 //#define UART_APP
-//#define GPIO_APP
+#define GPIO_APP
 //#define I2C_APP_ACCELEROMETER
-#define I2C_APP_RTC
+//#define I2C_APP_RTC
 
 #ifdef UART_APP
 
@@ -223,25 +223,35 @@ int main(void)
 
 void i2c_rtc_testAPP_task(void * args)
 {
-	uint8_t buffer;
+	rtos_rtc_time buffer_t;
+//	uint8_t buffer;
 
 	/** I2C init **/
 	rtos_i2c_config_t rtc_config;
 	rtc_config.baudrate = 100000;
 	rtc_config.i2c_number = rtos_i2c0;
 	rtc_config.i2c_port = rtos_i2c_portB;
-	rtc_config.pin_config_struct.mux = kPORT_MuxAlt2;
+	rtc_config.mux = kPORT_MuxAlt2;
 	rtc_config.scl_pin = 2;
 	rtc_config.sda_pin = 3;
 	rtos_i2c_init(rtc_config);
 
 	/** ST **/
-	rtos_i2c_rtc_st();
+	rtos_i2c_rtc_st(rtos_i2c0);
+
+	rtos_rtc_time time;
+	time.hour = 0x06;
+	time.minute = 0xC9;
+	time.second = 0xE9;
+
+	rtos_i2c_rtc_set_hour(rtos_i2c0,time);
 
 	while (1)
 	{
-		buffer = rtos_i2c_rtc_read_hour();
-		PRINTF("%2X\n\r", buffer);
+
+		buffer_t = rtos_i2c_rtc_read_time(rtos_i2c0);
+		PRINTF("%2X : %2X : %2X\n\r", buffer_t.hour, buffer_t.minute, buffer_t.second);
+//		PRINTF("%2d : %2d : %2d\n\n\r", buffer_t.second, buffer_t.minute, buffer_t.hour);
 	}
 
 }
