@@ -91,37 +91,24 @@ int main(void)
 
 void gpio_tooglePin_task(void * args)
 {
-//	rtos_gpio_config_t config_LED;
+	rtos_gpio_config_t config_LED;
 	rtos_gpio_config_t config_SW2;
-
-	port_pin_config_t port_output_config =
-	{ kPORT_PullDisable, kPORT_FastSlewRate, kPORT_PassiveFilterDisable,
-			kPORT_OpenDrainDisable, kPORT_LowDriveStrength, kPORT_MuxAsGpio,
-			kPORT_UnlockRegister, };
-
-	gpio_pin_config_t gpio_output_config =
-	{ kGPIO_DigitalOutput, 1, };
-
-	CLOCK_EnableClock(kCLOCK_PortB);
-
-	PORT_SetPinConfig(PORTB, 22, &port_output_config);
-
-	GPIO_PinInit(GPIOB, 22, &gpio_output_config);
-
-//	config_LED.gpio = rtos_gpioB;
-//	config_LED.port = rtos_gpio_portB;
-//	config_LED.pin = 22;
+	config_LED.gpio = rtos_gpioB;
+	config_LED.port = rtos_gpio_portB;
+	config_LED.pin = 22;
+	config_LED.pin_direction = rtos_gpio_output;
+	rtos_gpio_init(config_LED);
 	config_SW2.gpio = rtos_gpioC;
 	config_SW2.port = rtos_gpio_portC;
 	config_SW2.pin = 6;
-//	rtos_gpio_init(config_LED);
+	config_SW2.pin_direction = rtos_gpio_input;
 	rtos_gpio_init(config_SW2);
 
 	for(;;)
 	{
 		rtos_gpio_wait_pin(config_SW2);
 //		el siguiente uso de recurso no tendria que ser rodeado por mutex ya que solo es un led el cuals seria encendido?
-		GPIO_TogglePinsOutput(GPIOB, 1 << 22); //LED
+		rtos_gpio_toogle_pin(config_LED);
 	}
 
 

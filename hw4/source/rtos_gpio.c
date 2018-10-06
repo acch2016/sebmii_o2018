@@ -100,31 +100,67 @@ rtos_gpio_flag_t rtos_gpio_init(rtos_gpio_config_t config)
 			gpio_handles[config.gpio].events =  xEventGroupCreate();
 			gpio_handles[config.gpio].mutex = xSemaphoreCreateMutex();
 
-			port_pin_config_t port_input_config = { kPORT_PullDisable,
-					kPORT_FastSlewRate, kPORT_PassiveFilterDisable,
-					kPORT_OpenDrainDisable, kPORT_LowDriveStrength,
-					kPORT_MuxAsGpio, kPORT_UnlockRegister, };
-
-			gpio_pin_config_t gpio_input_config = { kGPIO_DigitalInput, 1, };
+				port_pin_config_t port_output_config = { kPORT_PullDisable,
+						kPORT_FastSlewRate, kPORT_PassiveFilterDisable,
+						kPORT_OpenDrainDisable, kPORT_LowDriveStrength,
+						kPORT_MuxAsGpio, kPORT_UnlockRegister, };
+				port_pin_config_t port_input_config = { kPORT_PullDisable,
+						kPORT_FastSlewRate, kPORT_PassiveFilterDisable,
+						kPORT_OpenDrainDisable, kPORT_LowDriveStrength,
+						kPORT_MuxAsGpio, kPORT_UnlockRegister, };
+				gpio_pin_config_t gpio_output_config = { kGPIO_DigitalOutput, 1, };
+				gpio_pin_config_t gpio_input_config = { kGPIO_DigitalInput, 1, };
 
 			enable_port_clock(config.port);
 
-			PORT_SetPinConfig(get_port_base(config.port), config.pin, &port_input_config);
-
-			PORT_SetPinInterruptConfig(get_port_base(config.port), config.pin,
-					kPORT_InterruptEitherEdge);
-
-			nvic_enable_irq_nvic_set_priority(config.port);
-
+			if( rtos_gpio_input == config.pin_direction)
+			{
+				PORT_SetPinConfig(get_port_base(config.port), config.pin, &port_input_config);
+				PORT_SetPinInterruptConfig(get_port_base(config.port), config.pin, kPORT_InterruptRisingEdge);
+				nvic_enable_irq_nvic_set_priority(config.port);
 //			TODO En el rtos_uart.c Aldana hace un if para seleccionar uart0 o 1.
 //			En este caso habria que ver si esto interfiere cuando se necesite inicializar varios pines
-			GPIO_PinInit(get_gpio_base(config.gpio), config.pin, &gpio_input_config);
+				GPIO_PinInit(get_gpio_base(config.gpio), config.pin, &gpio_input_config);
+			}
+			else
+			{
+				PORT_SetPinConfig(get_port_base(config.port), config.pin, &port_output_config);
+				GPIO_PinInit(get_gpio_base(config.gpio), config.pin, &gpio_output_config);
+			}
 
 			gpio_handles[config.gpio].is_init = 1;
 			retval = rtos_gpio_sucess;
 		}
 	}
 	return retval;
+}
+
+rtos_gpio_flag_t rtos_gpio_wait_pin(rtos_gpio_config_t config)
+{
+	rtos_gpio_flag_t flag = rtos_gpio_fail;
+	if(gpio_handles[config.gpio].is_init)
+	{
+		xSemaphoreTake(gpio_handles[config.gpio].mutex, portMAX_DELAY);
+
+		xEventGroupWaitBits(gpio_handles[config.gpio].events,
+		EVENT_PORTA | EVENT_PORTB | EVENT_PORTC | EVENT_PORTD | EVENT_PORTE,
+		pdTRUE, pdFALSE, portMAX_DELAY);
+
+		xSemaphoreGive(gpio_handles[config.gpio].mutex);
+		flag = rtos_gpio_sucess;
+	}
+	return flag;
+}
+
+rtos_gpio_flag_t rtos_gpio_toogle_pin(rtos_gpio_config_t config)
+{
+	rtos_gpio_flag_t flag = rtos_gpio_fail;
+	if(gpio_handles[config.gpio].is_init)
+	{
+		GPIO_TogglePinsOutput(GPIOB, 1 << 22); //RED_LED
+		flag = rtos_gpio_sucess;
+	}
+	return flag;
 }
 
 static inline void nvic_enable_irq_nvic_set_priority(rtos_gpio_port_t port)
@@ -230,20 +266,3 @@ static inline PORT_Type * get_port_base(rtos_gpio_port_t port)
 //{
 //	return gpio_handles[config.gpio];
 //}
-
-rtos_gpio_flag_t rtos_gpio_wait_pin(rtos_gpio_config_t config)
-{
-	rtos_gpio_flag_t flag = rtos_gpio_fail;
-	if(gpio_handles[config.gpio].is_init)
-	{
-		xSemaphoreTake(gpio_handles[config.gpio].mutex, portMAX_DELAY);
-
-		xEventGroupWaitBits(gpio_handles[config.gpio].events,
-		EVENT_PORTA | EVENT_PORTB | EVENT_PORTC | EVENT_PORTD | EVENT_PORTE,
-		pdTRUE, pdFALSE, portMAX_DELAY);
-
-		xSemaphoreGive(gpio_handles[config.gpio].mutex);
-	}
-	return flag;
-
-}

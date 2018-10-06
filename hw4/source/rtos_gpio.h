@@ -12,6 +12,7 @@
 
 typedef enum {rtos_gpioA,rtos_gpioB,rtos_gpioC,rtos_gpioD,rtos_gpioE} rtos_gpio_t;
 typedef enum {rtos_gpio_portA,rtos_gpio_portB,rtos_gpio_portC,rtos_gpio_portD,rtos_gpio_portE} rtos_gpio_port_t;
+typedef enum {rtos_gpio_input,rtos_gpio_output} rtos_gpio_direction_t;
 typedef enum {rtos_gpio_sucess,rtos_gpio_fail} rtos_gpio_flag_t;
 
 typedef struct
@@ -20,6 +21,7 @@ typedef struct
 	rtos_gpio_t gpio;
 	rtos_gpio_port_t port;
 	uint32_t pin; //pin user wants to read
+	rtos_gpio_direction_t pin_direction;//
 //	uint8_t rx_pin;
 //	uint8_t tx_pin;
 //	uint8_t pin_mux;
