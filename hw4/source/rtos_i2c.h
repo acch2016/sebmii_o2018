@@ -5,6 +5,11 @@
  *      Author: Ulises Tejeda / Alejandro Canale
  */
 
+#ifndef RTOS_I2C_H_
+#define RTOS_I2C_H_
+
+
+
 #include <stdint.h>
 #include "fsl_i2c.h"
 #include "fsl_port.h"
@@ -39,3 +44,9 @@ typedef struct
 
 rtos_i2c_flag_t rtos_i2c_init(rtos_i2c_config_t config);
 rtos_i2c_flag_t rtos_i2c_master_transfer(rtos_i2c_number_t i2c_number, rtos_i2c_master_transf_config_t masterXfer_config);
+
+
+
+
+
+#endif /* RTOS_I2C_H_ */

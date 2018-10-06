@@ -45,7 +45,8 @@
 
 //#define UART_APP
 //#define GPIO_APP
-#define I2C_APP_ACCELEROMETER
+//#define I2C_APP_ACCELEROMETER
+#define I2C_APP_RTC
 
 #ifdef UART_APP
 
@@ -71,18 +72,14 @@ void uart_echo_task(void * args)
 
 int main(void)
 {
-
 	BOARD_BootClockRUN();
-
 	BOARD_InitBootPins();
 	BOARD_InitBootClocks();
 	BOARD_InitBootPeripherals();
 	BOARD_InitDebugConsole();
-PRINTF("hola_mundooo\n");
+	PRINTF("hola_mundooo\n");
 	xTaskCreate(uart_echo_task, "uart_echo_task", 110, NULL, 1, NULL);
 	vTaskStartScheduler();
-
-
 	for(;;);
 	return 0;
 }
@@ -134,18 +131,14 @@ void gpio_tooglePin_task(void * args)
 
 int main(void)
 {
-
 	BOARD_BootClockRUN();
-
 	BOARD_InitBootPins();
 	BOARD_InitBootClocks();
 	BOARD_InitBootPeripherals();
 	BOARD_InitDebugConsole();
-PRINTF("hola_mundooo\n");
+	PRINTF("hola_mundooo\n");
 	xTaskCreate(gpio_tooglePin_task, "gpio_tooglePin_task", 110, NULL, 1, NULL);
 	vTaskStartScheduler();
-
-
 	for(;;);
 	return 0;
 }
@@ -158,6 +151,7 @@ PRINTF("hola_mundooo\n");
 
 void i2c_testAPP_task(void * args)
 {
+	/** I2C init **/
 	rtos_i2c_config_t accel_config;
 	accel_config.baudrate = 100000;
 	accel_config.i2c_number = rtos_i2c0;
@@ -167,6 +161,7 @@ void i2c_testAPP_task(void * args)
 	accel_config.sda_pin = 25;
 	rtos_i2c_init(accel_config);
 
+	//** ST **//
 	uint8_t data_buffer = 0x01;
 	rtos_i2c_master_transf_config_t mXfer_config;
 	mXfer_config.slaveAddress = 0x1D;
@@ -209,16 +204,13 @@ void i2c_testAPP_task(void * args)
 int main(void)
 {
 	BOARD_BootClockRUN();
-
 	BOARD_InitBootPins();
 	BOARD_InitBootClocks();
 	BOARD_InitBootPeripherals();
 	BOARD_InitDebugConsole();
-PRINTF("hola_mundooo\n");
+	PRINTF("hola_mundooo\n");
 	xTaskCreate(i2c_testAPP_task, "i2c_testAPP_task", configMINIMAL_STACK_SIZE+110, NULL, configMAX_PRIORITIES, NULL);
 	vTaskStartScheduler();
-
-
 	for(;;);
 	return 0;
 }
@@ -226,10 +218,46 @@ PRINTF("hola_mundooo\n");
 #endif
 #ifdef I2C_APP_RTC
 
+#include "rtos_i2c.h"
+#include "rtos_i2c_rtc.h"
 
+void i2c_rtc_testAPP_task(void * args)
+{
+	uint8_t buffer;
 
+	/** I2C init **/
+	rtos_i2c_config_t rtc_config;
+	rtc_config.baudrate = 100000;
+	rtc_config.i2c_number = rtos_i2c0;
+	rtc_config.i2c_port = rtos_i2c_portB;
+	rtc_config.pin_config_struct.mux = kPORT_MuxAlt2;
+	rtc_config.scl_pin = 2;
+	rtc_config.sda_pin = 3;
+	rtos_i2c_init(rtc_config);
 
+	/** ST **/
+	rtos_i2c_rtc_st();
 
+	while (1)
+	{
+		buffer = rtos_i2c_rtc_read_hour();
+		PRINTF("%2X\n\r", buffer);
+	}
 
+}
+
+int main(void)
+{
+	BOARD_BootClockRUN();
+	BOARD_InitBootPins();
+	BOARD_InitBootClocks();
+	BOARD_InitBootPeripherals();
+	BOARD_InitDebugConsole();
+	PRINTF("hola_mundooo\n");
+	xTaskCreate(i2c_rtc_testAPP_task, "i2c_rtc_testAPP_task", configMINIMAL_STACK_SIZE+110, NULL, configMAX_PRIORITIES, NULL);
+	vTaskStartScheduler();
+	for(;;);
+	return 0;
+}
 
 #endif
