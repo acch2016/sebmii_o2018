@@ -44,7 +44,8 @@ rtos_memi2c_flag_t memi2c_read(rtos_i2c_number_t i2c_number, uint32_t address, u
 	msg.id = read_id;
 
 	for(;;){
-		rtos_i2c_read(i2c_number, address, txBuff, BUFFER_SIZE); //Los datos leidos están en txBuff
+//		TODO
+//		rtos_i2c_read(i2c_number, address, txBuff, BUFFER_SIZE); //Los datos leidos están en txBuff
 
 		msg.msg = txBuff;
 
@@ -64,7 +65,8 @@ rtos_memi2c_flag_t memi2c_write(rtos_i2c_number_t i2c_number, uint32_t address, 
 	msg.id = write_id;
 
 	for(;;){
-		rtos_i2c_write(i2c_number, address, txBuff, BUFFER_SIZE); //Los datos escritos van en txBuff
+//		TODO
+//		rtos_i2c_write(i2c_number, address, txBuff, BUFFER_SIZE); //Los datos escritos van en txBuff
 
 		xQueueSend(task_args.mailbox,&msg,portMAX_DELAY);
 
