@@ -44,9 +44,10 @@
 #include "fsl_port.h"
 
 //#define UART_APP
-#define GPIO_APP
+//#define GPIO_APP
 //#define I2C_APP_ACCELEROMETER
 //#define I2C_APP_RTC
+//#define I2C_APP_MEM
 
 #ifdef UART_APP
 
@@ -143,7 +144,7 @@ void i2c_testAPP_task(void * args)
 	accel_config.baudrate = 100000;
 	accel_config.i2c_number = rtos_i2c0;
 	accel_config.i2c_port = rtos_i2c_portE;
-	accel_config.pin_config_struct.mux = kPORT_MuxAlt5;
+	accel_config.mux = kPORT_MuxAlt5;
 	accel_config.scl_pin = 24;
 	accel_config.sda_pin = 25;
 	rtos_i2c_init(accel_config);
@@ -157,12 +158,11 @@ void i2c_testAPP_task(void * args)
 	mXfer_config.subaddressSize = 1;
 	mXfer_config.data = &data_buffer;
 	mXfer_config.dataSize = 1;
-	mXfer_config.flags = kI2C_TransferDefaultFlag;
 	rtos_i2c_master_transfer(rtos_i2c0, mXfer_config);
 
 	uint8_t buffer[6];
 	int16_t accelerometer[3];
-	float new0 = 0, new1 = 0, new2 = 0;
+//	float new0 = 0, new1 = 0, new2 = 0;
 
 	while (1)
 	{
@@ -172,7 +172,6 @@ void i2c_testAPP_task(void * args)
 		mXfer_config.subaddressSize = 1;
 		mXfer_config.data = buffer;
 		mXfer_config.dataSize = 6;
-		mXfer_config.flags = kI2C_TransferDefaultFlag;
 		rtos_i2c_master_transfer(rtos_i2c0, mXfer_config);
 
 		accelerometer[0] = buffer[0] << 8 | buffer[1];
@@ -205,7 +204,6 @@ int main(void)
 #endif
 #ifdef I2C_APP_RTC
 
-#include "rtos_i2c.h"
 #include "rtos_i2c_rtc.h"
 
 void i2c_rtc_testAPP_task(void * args)
@@ -214,14 +212,14 @@ void i2c_rtc_testAPP_task(void * args)
 //	uint8_t buffer;
 
 	/** I2C init **/
-	rtos_i2c_config_t rtc_config;
-	rtc_config.baudrate = 100000;
-	rtc_config.i2c_number = rtos_i2c0;
-	rtc_config.i2c_port = rtos_i2c_portB;
-	rtc_config.mux = kPORT_MuxAlt2;
-	rtc_config.scl_pin = 2;
-	rtc_config.sda_pin = 3;
-	rtos_i2c_init(rtc_config);
+	rtos_i2c_config_t i2c_config;
+	i2c_config.baudrate = 100000;
+	i2c_config.i2c_number = rtos_i2c0;
+	i2c_config.i2c_port = rtos_i2c_portB;
+	i2c_config.mux = kPORT_MuxAlt2;
+	i2c_config.scl_pin = 2;
+	i2c_config.sda_pin = 3;
+	rtos_i2c_init(i2c_config);
 
 	/** ST **/
 	rtos_i2c_rtc_st(rtos_i2c0);
@@ -250,8 +248,82 @@ int main(void)
 	BOARD_InitBootClocks();
 	BOARD_InitBootPeripherals();
 	BOARD_InitDebugConsole();
-	PRINTF("hola_mundooo\n");
+	PRINTF("hola_mundooo\n\r");
 	xTaskCreate(i2c_rtc_testAPP_task, "i2c_rtc_testAPP_task", configMINIMAL_STACK_SIZE+110, NULL, configMAX_PRIORITIES, NULL);
+	vTaskStartScheduler();
+	for(;;);
+	return 0;
+}
+
+#endif
+#ifdef I2C_APP_MEM
+
+#include "rtos_memi2c.h"
+#include "rtos_uart.h"
+
+#define ADDRESS 0x0259
+
+void i2c_mem_testAPP_task(void * args)
+{
+	//Configuración UART USB
+	rtos_uart_config_t config1;
+	config1.baudrate = 115200;
+	config1.rx_pin = 16;
+	config1.tx_pin = 17;
+	config1.pin_mux = kPORT_MuxAlt3;
+	config1.uart_number = rtos_uart0;
+	config1.port = rtos_uart_portB;
+	rtos_uart_init(config1);
+
+	uint8_t w_buffer[64] = {};
+	uint8_t* ptr_w_buffer = w_buffer;
+
+	uint8_t r_buffer[64] = {};
+	uint8_t* ptr_r_buffer = r_buffer;
+//	PRINTF("sizeof(r_buffer) %d\n\r", sizeof(r_buffer));//64
+
+	const unsigned char producer_msg[] = "1234\n\r";
+//	PRINTF("sizeof(producer_msg) %d\n\r", sizeof(producer_msg));// characters + null character \0
+
+	/** I2C init **/
+	rtos_i2c_config_t i2c_config;
+	i2c_config.baudrate = 100000;
+	i2c_config.i2c_number = rtos_i2c0;
+	i2c_config.i2c_port = rtos_i2c_portB;
+	i2c_config.mux = kPORT_MuxAlt2;
+	i2c_config.scl_pin = 2;
+	i2c_config.sda_pin = 3;
+	rtos_i2c_init(i2c_config);
+
+	//** first read what's in the specified ADDRESS and print it using UART **//
+	ptr_r_buffer = memi2c_read(rtos_i2c0, ADDRESS, sizeof(r_buffer));
+	rtos_uart_send(rtos_uart0, ptr_r_buffer, strlen(ptr_r_buffer));
+
+	//** assign the string to the uint8_t array **//
+	ptr_w_buffer = (uint8_t*)producer_msg;
+
+	//** now we're sure there's nothing, write on the specified ADDRESS**//
+	memi2c_write(rtos_i2c0, ADDRESS, ptr_w_buffer, sizeof(w_buffer));
+
+	//** we read and print again **//
+	ptr_r_buffer = memi2c_read(rtos_i2c0, ADDRESS, sizeof(r_buffer));
+	rtos_uart_send(rtos_uart0, ptr_r_buffer, strlen(ptr_r_buffer));
+
+	while (1)
+	{
+		vTaskDelete(NULL);
+	}
+}
+
+int main(void)
+{
+	BOARD_BootClockRUN();
+	BOARD_InitBootPins();
+	BOARD_InitBootClocks();
+	BOARD_InitBootPeripherals();
+	BOARD_InitDebugConsole();
+	PRINTF("hola_mundooo\n\r");
+	xTaskCreate(i2c_mem_testAPP_task, "i2c_mem_testAPP_task", configMINIMAL_STACK_SIZE+110, NULL, configMAX_PRIORITIES, NULL);
 	vTaskStartScheduler();
 	for(;;);
 	return 0;

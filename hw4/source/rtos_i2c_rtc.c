@@ -37,15 +37,14 @@ void rtos_i2c_rtc_st(rtos_i2c_number_t number)
 rtos_rtc_time rtos_i2c_rtc_read_time(rtos_i2c_number_t number)
 {
 	rtos_rtc_time buffer_t;
-//	uint8_t buffer;
 	rtos_i2c_master_transf_config_t mXfer_config;
+
 	mXfer_config.slaveAddress = 0x6F;
 	mXfer_config.direction = rtos_i2c_read;
 	mXfer_config.subaddress = 0x00;
 	mXfer_config.subaddressSize = 1;
 	mXfer_config.data = &buffer_t.second;
 	mXfer_config.dataSize = 1;
-
 	rtos_i2c_master_transfer(number, mXfer_config);
 
 	mXfer_config.subaddress = 0x01;
