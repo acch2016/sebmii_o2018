@@ -52,6 +52,7 @@ uint8_t sm_log = 0;
 uint8_t initial_log = 0;
 uint8_t modo_administrador = 0;
 uint8_t sm_set_hour = 0;
+uint16_t address;
 
 typedef struct
 {
@@ -114,12 +115,122 @@ char menu_3_8_t[] = "12:00:00\t\t\t";
 char menu_3_9_t[] = "\t\t\t";
 char menu_3_10_t[] = "\n";
 
+//BUFFERS PARA LECTURA Y ESCRITURA EN MEMORIA I2C
+uint8_t w_buffer[64] = {};
+uint8_t* ptr_w_buffer = w_buffer;
+uint8_t r_buffer[64] = {};
+uint8_t* ptr_r_buffer = r_buffer;
+
 //HORA EN ARRAY
 char time_array[11];
 
 void main_menu();
 
 void main_menu_bt();
+
+void get_address_from_array()
+{
+	//POS0
+	if(dir_memoria[0] == 'a')
+	{
+		address = 0xa*0x1000;
+	}
+	else if(dir_memoria[0] == 'b')
+	{
+		address = 0xb*0x1000;
+	}
+	else if(dir_memoria[0] == 'c')
+	{
+		address = 0xc*0x1000;
+	}
+	else if(dir_memoria[0] == 'd')
+	{
+		address = 0xd*0x1000;
+	}
+	else if(dir_memoria[0] == 'f')
+	{
+		address = 0xf*0x1000;
+	}
+	else
+	{
+		address = dir_memoria[0]*0x1000;
+	}
+	//POS1
+	if(dir_memoria[1] == 'a')
+	{
+		address = address + 0xa*0x100;
+	}
+	else if(dir_memoria[1] == 'b')
+	{
+		address = address + 0xb*0x100;
+	}
+	else if(dir_memoria[1] == 'c')
+	{
+		address = address + 0xc*0x100;
+	}
+	else if(dir_memoria[1] == 'd')
+	{
+		address = address + 0xd*0x100;
+	}
+	else if(dir_memoria[1] == 'f')
+	{
+		address = address + 0xf*0x100;
+	}
+	else
+	{
+		address = address + dir_memoria[1]*0x100;
+	}
+	//POS2
+	if(dir_memoria[2] == 'a')
+	{
+		address = address + 0xa*0x10;
+	}
+	else if(dir_memoria[2] == 'b')
+	{
+		address = address + 0xb*0x10;
+	}
+	else if(dir_memoria[2] == 'c')
+	{
+		address = address + 0xc*0x10;
+	}
+	else if(dir_memoria[2] == 'd')
+	{
+		address = address + 0xd*0x10;
+	}
+	else if(dir_memoria[2] == 'f')
+	{
+		address = address + 0xf*0x10;
+	}
+	else
+	{
+		address = address + dir_memoria[2]*0x10;
+	}
+	//POS3
+	if(dir_memoria[3] == 'a')
+	{
+		address = address + 0xa;
+	}
+	else if(dir_memoria[3] == 'b')
+	{
+		address = address + 0xb;
+	}
+	else if(dir_memoria[3] == 'c')
+	{
+		address = address + 0xc;
+	}
+	else if(dir_memoria[3] == 'd')
+	{
+		address = address + 0xd;
+	}
+	else if(dir_memoria[3] == 'f')
+	{
+		address = address + 0xf;
+	}
+	else
+	{
+		address = address + dir_memoria[3];
+	}
+}
 
 uint8_t to_seconds(uint8_t seconds)
 {
@@ -740,8 +851,12 @@ void data_input_manager(uint8_t data)
 						data_to_write[wr_chars] = '\0';
 						wr_chars = 0;
 
-						//GUARDAR ELEMENTO EN LA MEMORIA.
+						//console.log() GUARDAR ELEMENTO EN LA MEMORIA.
 						//LA DIRECCIÓN DE LA MEMORIA ESTÁ EN EL ARREGLO "dir_memoria[]" Y LO QUE SE GUARDA EN "data_to_write"
+
+						get_address_from_array();
+
+						memi2c_write(rtos_i2c0, address, data_to_write, sizeof(data_to_write));
 
 						store_log(PC);
 						rtos_uart_send(rtos_uart0, &menu_1_2_t, sizeof(menu_1_2_t));
@@ -1438,6 +1553,16 @@ void system_start()
 	rtc_config.scl_pin = 2;
 	rtc_config.sda_pin = 3;
 	rtos_i2c_init(rtc_config);
+
+	/** I2C init **/
+	rtos_i2c_config_t i2c_config;
+	i2c_config.baudrate = 100000;
+	i2c_config.i2c_number = rtos_i2c0;
+	i2c_config.i2c_port = rtos_i2c_portB;
+	i2c_config.mux = kPORT_MuxAlt2;
+	i2c_config.scl_pin = 2;
+	i2c_config.sda_pin = 3;
+	rtos_i2c_init(i2c_config);
 
 	//ST
 	rtos_i2c_rtc_st(rtos_i2c0);
