@@ -152,15 +152,23 @@ rtos_gpio_flag_t rtos_gpio_wait_pin(rtos_gpio_config_t config)
 	return flag;
 }
 
-rtos_gpio_flag_t rtos_gpio_toogle_pin(rtos_gpio_config_t config)
+uint8_t rtos_gpio_toogle_pin(rtos_gpio_config_t config, uint8_t modo_administrador)
 {
 	rtos_gpio_flag_t flag = rtos_gpio_fail;
 	if(gpio_handles[config.gpio].is_init)
 	{
 		GPIO_TogglePinsOutput(GPIOB, 1 << 22); //RED_LED
 		flag = rtos_gpio_sucess;
+		if(modo_administrador == 0)
+		{
+			modo_administrador = 1;
+		}
+		else
+		{
+			modo_administrador = 0;
+		}
 	}
-	return flag;
+	return modo_administrador;
 }
 
 static inline void nvic_enable_irq_nvic_set_priority(rtos_gpio_port_t port)
