@@ -29,6 +29,7 @@
 #define MENU_2						(3)
 #define MENU_3						(4)
 #define MENU_4						(5)
+#define MENU_HOUR_ERROR				(6)
 #define NO_ASIGNADO					(0x5A)
 
 uint8_t old_data;
@@ -44,6 +45,7 @@ uint8_t wr_chars = 0;
 uint8_t sm_log = 0;
 uint8_t initial_log = 0;
 uint8_t modo_administrador = 0;
+uint8_t sm_set_hour = 0;
 
 typedef struct
 {
@@ -57,11 +59,11 @@ typedef struct
 	char log_3_mem[4];
 	char log_4_mem[4];
 	char log_5_mem[4];
-	char data_1[5];
-	char data_2[5];
-	char data_3[5];
-	char data_4[5];
-	char data_5[5];
+	char data_1[20];
+	char data_2[20];
+	char data_3[20];
+	char data_4[20];
+	char data_5[20];
 }log_memoria;
 
 typedef struct
@@ -75,6 +77,7 @@ typedef struct
 char console_clear_t[] = "\e[1;1H\e[2J";
 char main_menu_t[] = "\r+++---MAIN MENU---+++\n\n\rControl del modulo de memoria compartida:\n\r1) Escribir en direccion.\n\r2) Leer de direccion\n\r3) Historial\n\r4) Establecer hora\n\rSelecciona una opcion del menu superior:  \n\r";
 char error_menu_t[] = "\r*****ERROR*****\n\n\rIngresa una opcion correcta (1,2,3,4) del menu anterior\n\rPulsa cualquier tecla para continuar: \n\r";
+char error_time_t[] = "\r*****ERROR*****\n\n\rEl formato de hora que estabas por ingresar es incorrecto. Intentalo de nuevo.\n\rPulsa cualquier tecla para continuar: \n\r";
 char menu_1_t[] = "\rSeleccionaste la opcion 1:\n\rDireccion (Hexa) y presiona Enter: 0x\n\r";
 char menu_1_1_t[] = "\n\rAhora, ingresa lo que desees escribir y presiona Enter: \n\r";
 char menu_1_2_t[] = "\n\rSe ha guardado correctamente el siguiente elemento: \n\r";
@@ -86,6 +89,7 @@ char menu_4_t[] = "\rIngrese la hora (hh:mm:ss):\n\r";
 char menu_4_1_t[] = "\rDebe ingresar como administrador para entrar a esete menu.\n\r";
 char menu_admin_mode[] = "\n\r~~~~~MODO DE ADMINISTRADOR ACTIVADO~~~~~\n\n\r";
 char menu_return_to_main_t[] = "\n\n\rPresiona cualquier tecla para volver al menu principal: \n\r";
+char set_time_finish[] = "\n\r~~~~~HORA ACTUALIZADA~~~~~\n\n\r";
 log_memoria log_menu_3;
 time hour_to_set;
 
@@ -196,6 +200,7 @@ void menu_4()
 	console_clear();
 	if(modo_administrador == 0) //DEBE SER 1, PARA QUE SÓLO PUEDA ENTRAR COMO ADMINISTRADOR
 	{
+		actual_menu = MENU_4;
 		rtos_uart_send(rtos_uart0, &menu_admin_mode, sizeof(menu_admin_mode));
 		rtos_uart_send(rtos_uart0, &menu_4_t, sizeof(menu_4_t));
 	}
@@ -220,12 +225,10 @@ void store_log()
 					{
 						log_menu_3.log_1_mem[i] = dir_memoria[i];
 					}
-					log_menu_3.data_1[0] = data_to_write[0];
-					log_menu_3.data_1[1] = data_to_write[1];
-					log_menu_3.data_1[2] = data_to_write[2];
-					log_menu_3.data_1[3] = data_to_write[3];
-					log_menu_3.data_1[4] = data_to_write[4];
-					log_menu_3.data_1[5] = data_to_write[5];
+					for(int i=0; i<(strlen(data_to_write)<20?strlen(data_to_write):20);i++)
+					{
+						log_menu_3.data_1[i] = data_to_write[i];
+					}
 					initial_log = 1;
 					break;
 				}
@@ -235,12 +238,10 @@ void store_log()
 					{
 						log_menu_3.log_2_mem[i] = dir_memoria[i];
 					}
-					log_menu_3.data_2[0] = data_to_write[0];
-					log_menu_3.data_2[1] = data_to_write[1];
-					log_menu_3.data_2[2] = data_to_write[2];
-					log_menu_3.data_2[3] = data_to_write[3];
-					log_menu_3.data_2[4] = data_to_write[4];
-					log_menu_3.data_2[5] = data_to_write[5];
+					for(int i=0; i<(strlen(data_to_write)<20?strlen(data_to_write):20);i++)
+					{
+						log_menu_3.data_2[i] = data_to_write[i];
+					}
 					initial_log = 2;
 					break;
 				}
@@ -250,12 +251,10 @@ void store_log()
 					{
 						log_menu_3.log_3_mem[i] = dir_memoria[i];
 					}
-					log_menu_3.data_3[0] = data_to_write[0];
-					log_menu_3.data_3[1] = data_to_write[1];
-					log_menu_3.data_3[2] = data_to_write[2];
-					log_menu_3.data_3[3] = data_to_write[3];
-					log_menu_3.data_3[4] = data_to_write[4];
-					log_menu_3.data_3[5] = data_to_write[5];
+					for(int i=0; i<(strlen(data_to_write)<20?strlen(data_to_write):20);i++)
+					{
+						log_menu_3.data_3[i] = data_to_write[i];
+					}
 					initial_log = 3;
 					break;
 				}
@@ -265,12 +264,10 @@ void store_log()
 					{
 						log_menu_3.log_4_mem[i] = dir_memoria[i];
 					}
-					log_menu_3.data_4[0] = data_to_write[0];
-					log_menu_3.data_4[1] = data_to_write[1];
-					log_menu_3.data_4[2] = data_to_write[2];
-					log_menu_3.data_4[3] = data_to_write[3];
-					log_menu_3.data_4[4] = data_to_write[4];
-					log_menu_3.data_4[5] = data_to_write[5];
+					for(int i=0; i<(strlen(data_to_write)<20?strlen(data_to_write):20);i++)
+					{
+						log_menu_3.data_4[i] = data_to_write[i];
+					}
 					initial_log = 4;
 					break;
 				}
@@ -280,12 +277,10 @@ void store_log()
 					{
 						log_menu_3.log_5_mem[i] = dir_memoria[i];
 					}
-					log_menu_3.data_5[0] = data_to_write[0];
-					log_menu_3.data_5[1] = data_to_write[1];
-					log_menu_3.data_5[2] = data_to_write[2];
-					log_menu_3.data_5[3] = data_to_write[3];
-					log_menu_3.data_5[4] = data_to_write[4];
-					log_menu_3.data_5[5] = data_to_write[5];
+					for(int i=0; i<(strlen(data_to_write)<20?strlen(data_to_write):20);i++)
+					{
+						log_menu_3.data_5[i] = data_to_write[i];
+					}
 					sm_log = 1;
 					break;
 				}
@@ -302,25 +297,21 @@ void store_log()
 				log_menu_3.log_3_mem[i] = log_menu_3.log_4_mem[i];
 				log_menu_3.log_4_mem[i] = log_menu_3.log_5_mem[i];
 				log_menu_3.log_5_mem[i] = dir_memoria[i];
+			}
 
+			for(int i=0; i<(strlen(data_to_write)<20?strlen(data_to_write):20); i++)
+			{
 				log_menu_3.data_1[i] = log_menu_3.data_2[i];
 				log_menu_3.data_2[i] = log_menu_3.data_3[i];
 				log_menu_3.data_3[i] = log_menu_3.data_4[i];
 				log_menu_3.data_4[i] = log_menu_3.data_5[i];
 				log_menu_3.data_5[i] = data_to_write[i];
 			}
-
-			log_menu_3.data_1[4] = log_menu_3.data_2[4];
-			log_menu_3.data_2[4] = log_menu_3.data_3[4];
-			log_menu_3.data_3[4] = log_menu_3.data_4[4];
-			log_menu_3.data_4[4] = log_menu_3.data_5[4];
-			log_menu_3.data_5[4] = data_to_write[4];
 			break;
 		}
 		default: break;
 	}
 }
-
 
 void data_input_manager(uint8_t data)
 {
@@ -346,6 +337,11 @@ void data_input_manager(uint8_t data)
 			break;
 		}
 		case MENU_MAIN_MENU_ERROR:
+		{
+			main_menu();
+			break;
+		}
+		case MENU_HOUR_ERROR:
 		{
 			main_menu();
 			break;
@@ -468,6 +464,186 @@ void data_input_manager(uint8_t data)
 				}
 				break;
 			}
+		}
+		case MENU_4:
+		{
+			if(modo_administrador == 0) //DEBE SER 1
+			{
+				switch(sm_set_hour)
+				{
+					case 0:
+					{
+						if(data == 0x31 || data == 0x32 || data == 0x30)
+						{
+							hour_to_set.horas = data -'0';
+							sm_set_hour = 1;
+						}
+						else
+						{
+							actual_menu = MENU_HOUR_ERROR;
+							rtos_uart_send(rtos_uart0, &error_time_t, sizeof(error_time_t));
+							sm_set_hour = 0;
+						}
+						break;
+					}
+					case 1:
+					{
+						if(data == 0x31 || data == 0x32 || data == 0x33 || data == 0x34 || data == 0x35 || data == 0x36 || data == 0x37 || data == 0x38 || data == 0x39 || data == 0x30)
+						{
+							if(hour_to_set.horas == 0)
+							{
+								hour_to_set.horas = data - '0';
+							}
+							if(hour_to_set.horas == 1)
+							{
+								hour_to_set.horas = (data - '0') + 10;
+							}
+							if(hour_to_set.horas == 2)
+							{
+								hour_to_set.horas = (data - '0') + 20;
+							}
+							sm_set_hour = 2;
+						}
+						else
+						{
+							actual_menu = MENU_HOUR_ERROR;
+							rtos_uart_send(rtos_uart0, &error_time_t, sizeof(error_time_t));
+							sm_set_hour = 0;
+						}
+						break;
+					}
+					case 2:
+					{
+						sm_set_hour = 3;
+						break;
+					}
+					case 3:
+					{
+						if(data == 0x31 || data == 0x32 || data == 0x33 || data == 0x34 || data == 0x35 || data == 0x30)
+						{
+							hour_to_set.minutos = data -'0';
+							sm_set_hour = 4;
+						}
+						else
+						{
+							actual_menu = MENU_HOUR_ERROR;
+							rtos_uart_send(rtos_uart0, &error_time_t, sizeof(error_time_t));
+							sm_set_hour = 0;
+						}
+						break;
+					}
+					case 4:
+					{
+						if(data == 0x31 || data == 0x32 || data == 0x33 || data == 0x34 || data == 0x35 || data == 0x36 || data == 0x37 || data == 0x38 || data == 0x39 || data == 0x30)
+						{
+							if(hour_to_set.minutos == 0)
+							{
+								hour_to_set.minutos = data - '0';
+							}
+							if(hour_to_set.minutos == 1)
+							{
+								hour_to_set.minutos = (data - '0') + 10;
+							}
+							if(hour_to_set.minutos == 2)
+							{
+								hour_to_set.minutos = (data - '0') + 20;
+							}
+							if(hour_to_set.minutos == 3)
+							{
+								hour_to_set.minutos = (data - '0') + 30;
+							}
+							if(hour_to_set.minutos == 4)
+							{
+								hour_to_set.minutos = (data - '0') + 40;
+							}
+							if(hour_to_set.minutos == 5)
+							{
+								hour_to_set.minutos = (data - '0') + 50;
+							}
+							sm_set_hour = 5;
+						}
+						else
+						{
+							actual_menu = MENU_HOUR_ERROR;
+							rtos_uart_send(rtos_uart0, &error_time_t, sizeof(error_time_t));
+							sm_set_hour = 0;
+						}
+						break;
+					}
+					case 5:
+					{
+						sm_set_hour = 6;
+						break;
+					}
+					case 6:
+					{
+						if(data == 0x31 || data == 0x32 || data == 0x33 || data == 0x34 || data == 0x35 || data == 0x30)
+						{
+							hour_to_set.segundos = data -'0';
+							sm_set_hour = 7;
+						}
+						else
+						{
+							actual_menu = MENU_HOUR_ERROR;
+							rtos_uart_send(rtos_uart0, &error_time_t, sizeof(error_time_t));
+							sm_set_hour = 0;
+						}
+						break;
+					}
+					case 7:
+					{
+						if(data == 0x31 || data == 0x32 || data == 0x33 || data == 0x34 || data == 0x35 || data == 0x36 || data == 0x37 || data == 0x38 || data == 0x39 || data == 0x30)
+						{
+							if(hour_to_set.segundos == 0)
+							{
+								hour_to_set.segundos = data - '0';
+							}
+							if(hour_to_set.segundos == 1)
+							{
+								hour_to_set.segundos = (data - '0') + 10;
+							}
+							if(hour_to_set.segundos == 2)
+							{
+								hour_to_set.segundos = (data - '0') + 20;
+							}
+							if(hour_to_set.segundos == 3)
+							{
+								hour_to_set.segundos = (data - '0') + 30;
+							}
+							if(hour_to_set.segundos == 4)
+							{
+								hour_to_set.segundos = (data - '0') + 40;
+							}
+							if(hour_to_set.segundos == 5)
+							{
+								hour_to_set.segundos = (data - '0') + 50;
+							}
+							sm_set_hour = 8;
+						}
+						else
+						{
+							actual_menu = MENU_HOUR_ERROR;
+							rtos_uart_send(rtos_uart0, &error_time_t, sizeof(error_time_t));
+							sm_set_hour = 0;
+						}
+						break;
+					}
+					case 8:
+					{
+						rtos_uart_send(rtos_uart0, &set_time_finish, sizeof(set_time_finish));
+						sm_set_hour = 9;
+						break;
+					}
+					case 9:
+					{
+						sm_set_hour = 0;
+						main_menu();
+						break;
+					}
+				}
+
+			}
+			break;
 		}
 		default: main_menu();
 	}
