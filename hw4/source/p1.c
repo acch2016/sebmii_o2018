@@ -53,6 +53,7 @@ uint8_t initial_log = 0;
 uint8_t modo_administrador = 0;
 uint8_t sm_set_hour = 0;
 uint16_t address;
+char *readed_data;
 
 typedef struct
 {
@@ -851,12 +852,11 @@ void data_input_manager(uint8_t data)
 						data_to_write[wr_chars] = '\0';
 						wr_chars = 0;
 
-						//console.log() GUARDAR ELEMENTO EN LA MEMORIA.
-						//LA DIRECCIÓN DE LA MEMORIA ESTÁ EN EL ARREGLO "dir_memoria[]" Y LO QUE SE GUARDA EN "data_to_write"
-
 						get_address_from_array();
 
-						memi2c_write(rtos_i2c0, address, data_to_write, sizeof(data_to_write));
+						ptr_w_buffer = (uint8_t*)data_to_write;
+
+						memi2c_write(rtos_i2c0, address, ptr_w_buffer, sizeof(w_buffer));
 
 						store_log(PC);
 						rtos_uart_send(rtos_uart0, &menu_1_2_t, sizeof(menu_1_2_t));
@@ -917,14 +917,19 @@ void data_input_manager(uint8_t data)
 				{
 					if(data == 0xd)
 					{
-						size_to_read = data -'0';
+						size_to_read = old_data -'0';
 						rtos_uart_send(rtos_uart0, &menu_2_2_t, sizeof(menu_2_2_t));
 
-						//AQUÍ SE LEE DE LA MEMORIA
-						//LA DIRECCIÓN DE LA QUE SE VA A LEER ESTÁ EN EL ARREGLO "dir_memoria", Y EL TAMAÑO DE LO QUE SE DEBE LEER ESTÁ EN "size_to_read".
+						get_address_from_array();
 
+						ptr_r_buffer = memi2c_read(rtos_i2c0, address, sizeof(r_buffer));
+
+						rtos_uart_send(rtos_uart0, ptr_r_buffer, size_to_read);
 						rtos_uart_send(rtos_uart0, &menu_return_to_main_t, sizeof(menu_return_to_main_t));
 						flag_menu_2 = 2;
+					}
+					else{
+						old_data = data;
 					}
 				}
 				else if (flag_menu_2 == 2)
@@ -1199,8 +1204,11 @@ void data_input_manager_bt(uint8_t data)
 						data_to_write[wr_chars] = '\0';
 						wr_chars = 0;
 
-						//GUARDAR ELEMENTO EN LA MEMORIA.
-						//LA DIRECCIÓN DE LA MEMORIA ESTÁ EN EL ARREGLO "dir_memoria[]" Y LO QUE SE GUARDA EN "data_to_write"
+						get_address_from_array();
+
+						ptr_w_buffer = (uint8_t*)data_to_write;
+
+						memi2c_write(rtos_i2c0, address, ptr_w_buffer, sizeof(w_buffer));
 
 						store_log(CEL);
 						rtos_uart_send(rtos_uart1, &menu_1_2_t, sizeof(menu_1_2_t));
@@ -1261,14 +1269,19 @@ void data_input_manager_bt(uint8_t data)
 				{
 					if(data == 0xd)
 					{
-						size_to_read = data -'0';
+						size_to_read = old_data -'0';
 						rtos_uart_send(rtos_uart1, &menu_2_2_t, sizeof(menu_2_2_t));
 
-						//AQUÍ SE LEE DE LA MEMORIA
-						//LA DIRECCIÓN DE LA QUE SE VA A LEER ESTÁ EN EL ARREGLO "dir_memoria", Y EL TAMAÑO DE LO QUE SE DEBE LEER ESTÁ EN "size_to_read".
+						get_address_from_array();
 
+						ptr_r_buffer = memi2c_read(rtos_i2c0, address, sizeof(r_buffer));
+
+						rtos_uart_send(rtos_uart1, ptr_r_buffer, size_to_read);
 						rtos_uart_send(rtos_uart1, &menu_return_to_main_t, sizeof(menu_return_to_main_t));
 						flag_menu_2 = 2;
+					}
+					else{
+						old_data = data;
 					}
 				}
 				else if (flag_menu_2 == 2)
