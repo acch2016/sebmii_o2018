@@ -92,6 +92,7 @@ int main(void)
 
 void gpio_tooglePin_task(void * args)
 {
+	uint8_t modo_administrador = 0;
 	rtos_gpio_config_t config_LED;
 	rtos_gpio_config_t config_SW2;
 	config_LED.gpio = rtos_gpioB;
@@ -109,7 +110,7 @@ void gpio_tooglePin_task(void * args)
 	{
 		rtos_gpio_wait_pin(config_SW2);
 //		el siguiente uso de recurso no tendria que ser rodeado por mutex ya que solo es un led el cuals seria encendido?
-		rtos_gpio_toogle_pin(config_LED);
+		modo_administrador = rtos_gpio_toogle_pin(config_LED, modo_administrador);
 	}
 
 
@@ -125,7 +126,7 @@ int main(void)
 	BOARD_InitBootPeripherals();
 	BOARD_InitDebugConsole();
 	PRINTF("hola_mundooo\n");
-	xTaskCreate(gpio_tooglePin_task, "gpio_tooglePin_task", 110, NULL, 1, NULL);
+	xTaskCreate(gpio_tooglePin_task, "gpio_tooglePin_task", configMINIMAL_STACK_SIZE+110, NULL, 1, NULL);
 	vTaskStartScheduler();
 	for(;;);
 	return 0;

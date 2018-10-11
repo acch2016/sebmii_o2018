@@ -25,6 +25,8 @@
 #include "rtos_i2c_rtc.h"
 #include "rtos_gpio.h"
 
+#define P1
+#ifdef P1
 #define SYSTEM_START_PRIORITY		(configMAX_PRIORITIES)
 #define MENU_MAIN_MENU				(0)
 #define MENU_MAIN_MENU_ERROR		(1)
@@ -1612,3 +1614,4 @@ int main (void)
     return 0 ;
 
 }
+#endif
