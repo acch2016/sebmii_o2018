@@ -1217,7 +1217,9 @@ status_t ENET_ReadFrame(ENET_Type *base, enet_handle_t *handle, uint8_t *data, u
                 {
                     /* Copy the frame to user's buffer without FCS. */
                     len = curBuffDescrip->length - offset;
-                    memcpy(data + offset, (void *)address, len);
+                        memcpy(data + offset, (void *)address, len);
+//                    DMA_Transfer((uint32_t*)(data + offset), (uint32_t *)address, len);
+
 #ifdef ENET_ENHANCEDBUFFERDESCRIPTOR_MODE
                     /* Store the PTP 1588 timestamp for received PTP event frame. */
                     if (isPtpEventMessage)

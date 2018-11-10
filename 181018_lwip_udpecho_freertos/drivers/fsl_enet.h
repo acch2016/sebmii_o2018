@@ -35,6 +35,8 @@
 #define _FSL_ENET_H_
 
 #include "fsl_common.h"
+#include "fsl_edma.h"
+#include "fsl_dmamux.h"
 #if defined(FSL_FEATURE_MEMORY_HAS_ADDRESS_OFFSET) && FSL_FEATURE_MEMORY_HAS_ADDRESS_OFFSET
 #include "fsl_memory.h"
 #endif

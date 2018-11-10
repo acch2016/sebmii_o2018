@@ -50,6 +50,9 @@
 #include "fsl_device_registers.h"
 #include "pin_mux.h"
 #include "clock_config.h"
+
+#include "fsl_edma.h"
+#include "fsl_dmamux.h"
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
@@ -67,10 +70,6 @@
 #define configNET_MASK3 0
 
 /* Gateway address configuration. */
-//#define configGW_ADDR0 192
-//#define configGW_ADDR1 168
-//#define configGW_ADDR2 0
-//#define configGW_ADDR3 100
 #define configGW_ADDR0 192
 #define configGW_ADDR1 168
 #define configGW_ADDR2 1
@@ -139,7 +138,7 @@ static void stack_init(void *arg)
            ((u8_t *)&fsl_netif0_gw)[2], ((u8_t *)&fsl_netif0_gw)[3]);
     PRINTF("************************************************\r\n");
 
-    udpecho_init();
+//    udpecho_init();
 
     vTaskDelete(NULL);
 }
@@ -159,8 +158,11 @@ int main(void)
     /* Initialize lwIP from thread */
     if(sys_thread_new("main", stack_init, NULL, INIT_THREAD_STACKSIZE, INIT_THREAD_PRIO) == NULL)
         LWIP_ASSERT("main(): Task creation failed.", 0);
-    audio_player_init();
 
+
+    DMA_Init();
+    udpecho_init();
+    audio_player_init();
     vTaskStartScheduler();
 
     /* Will not get here unless a task calls vTaskEndScheduler ()*/
