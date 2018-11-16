@@ -1,14 +1,11 @@
 /*
  * SOUND_PLAYER.c
  *
- *  Created on: Nov 8, 2018
- *      Author: acc
+ *  Created on: 14/06/2018
+ *      Author: Cursos
  */
-
-
 #include "SOUND_PLAYER.h"
 #include "udpecho.h"
-extern SemaphoreHandle_t synchroTaskSemaphore;
 
 
 void PITconfig()
@@ -19,6 +16,7 @@ void PITconfig()
 	//MCR
 	PIT_Init(PIT, &pit_config);
 	//    PIT_SetTimerPeriod(PIT, kPIT_Chnl_0, CLOCK_GetBusClkFreq()*(1.5));
+//	TODO Fs
 	/* Set timer period for channel 0 */
 	PIT_SetTimerPeriod(PIT, kPIT_Chnl_0, USEC_TO_COUNT(50U, CLOCK_GetFreq(kCLOCK_BusClk)));//como son 100 valores, le toma mas tiempo y por lo tanto la frecuencia es dos ceros mas abajo
 	//    PIT_SetTimerPeriod(PIT, kPIT_Chnl_0, CLOCK_GetBusClkFreq());
@@ -105,14 +103,29 @@ static void audio_player(void*arg)
 		static uint8_t i_FILL_ping_PLAY_pong = 0;
 		static uint8_t i_FILL_pong_PLAY_ping = 0;
 
+//				if (EVENT_BIT & xEventGroupGetBits(event)) {
+//		netbuf_copy(buf, GlobalBuffer, N_SIZE);
+//					for(uint8_t i_ping = 0; i_ping < PINGPONGSIZE; i_ping ++ )
+//					{
+//						pingBuffer[i_ping] = GlobalBufferPtr[i_ping];
+//					}
+//					flag_ping = 1;
+//					xEventGroupClearBits(event, EVENT_BIT);
+//				} else {
+//		netbuf_copy(buf, pongBuffer, PINGPONGSIZE);
+//					for(uint8_t i_pong = 0; i_pong < PINGPONGSIZE; i_pong ++ )
+//					{
+//						pongBuffer[i_pong] = GlobalBufferPtr[i_pong];
+//					}
+//					flag_pong = 1;
+//					xEventGroupSetBits(event, EVENT_BIT);
+//				}
 
 
 		if( 1 == played_B)
 		{
 			if (PINGPONGSIZE == i_FILL_ping_PLAY_pong)
 			{
-//				DAC_SetBufferValue(DAC0, 0U, pongBuffer[2048]);
-				xSemaphoreGive(synchroTaskSemaphore);
 				GlobalBufferPtr = AudioPlayer_getBuffer();
 				i_FILL_ping_PLAY_pong = 0;
 				played_B = 0;
@@ -120,14 +133,20 @@ static void audio_player(void*arg)
 			}
 			pingBuffer[i_FILL_ping_PLAY_pong] = GlobalBufferPtr[i_FILL_ping_PLAY_pong];
 			DAC_SetBufferValue(DAC0, 0U, pongBuffer[i_FILL_ping_PLAY_pong]);
+//			if (0 == pongBuffer[i_FILL_ping_PLAY_pong])
+//			{
+////				GPIO_TogglePinsOutput(GPIOE, 1 << 26);//////////////////////////////////////////////////Toogle
+//				GPIO_WritePinOutput(GPIOE, 26, 0);    //G ON
+//			} else {
+//				GPIO_WritePinOutput(GPIOE, 26, 1);    //G OFF
+//			}
+//			GPIO_TogglePinsOutput(GPIOC, 1 << 4);//////////////////////////////////////////////////Toogle
 			i_FILL_ping_PLAY_pong++;
 		}
 		else
 		{
 			if (PINGPONGSIZE == i_FILL_pong_PLAY_ping)
 			{
-//				DAC_SetBufferValue(DAC0, 0U, pingBuffer[2048]);
-				xSemaphoreGive(synchroTaskSemaphore);
 				GlobalBufferPtr = AudioPlayer_getBuffer();
 				i_FILL_pong_PLAY_ping = 0;
 				played_B = 1;
@@ -136,6 +155,17 @@ static void audio_player(void*arg)
 			DAC_SetBufferValue(DAC0, 0U, pingBuffer[i_FILL_pong_PLAY_ping]);
 			i_FILL_pong_PLAY_ping++;
 		}
+
+		//		static uint8_t i_SinValue = 0;
+		//		if (i_SinValue == 100)
+		//		{
+		//			i_SinValue = 0;
+		//			GPIO_TogglePinsOutput(GPIOE, 1 << 26);
+		//		}
+		//
+		//		DAC_SetBufferValue(DAC0, 0U, valores[i_SinValue]);
+		//		i_SinValue ++;
+
 	}
 
 }
@@ -154,6 +184,12 @@ void PIT0_IRQHandler()
 {
 	BaseType_t xHigherPriorityTaskWoken;
 	PIT_ClearStatusFlags(PIT, kPIT_Chnl_0, kPIT_TimerFlag);
+	//	PIT_StopTimer(PIT, kPIT_Chnl_0);
+	//	PIT_StartTimer(PIT, kPIT_Chnl_0);
+	//		GPIO_TogglePinsOutput(GPIOB, 1 << 21);
+	//	counter++;
+	//	PRINTF("\r\n%d\r\n", counter);
+	//en lugar de poner logica del DAC aqui, se puso un evento
 	xHigherPriorityTaskWoken = pdFALSE;
 	xSemaphoreGiveFromISR(pitToogleSemaphore, &xHigherPriorityTaskWoken );
 	portYIELD_FROM_ISR( xHigherPriorityTaskWoken );

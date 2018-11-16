@@ -76,6 +76,12 @@ AT_NONCACHEABLE_SECTION_INIT(uint32_t destAddr[BUFF_LENGTH]) = {0x00, 0x00, 0x00
 /*!
  * @brief Main function
  */
+
+void * custom_memcpy ( void * destination, const void * source, size_t num )
+{
+
+}
+
 int main(void)
 {
     uint32_t i = 0;

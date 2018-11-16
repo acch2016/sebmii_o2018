@@ -40,7 +40,6 @@
 #include "lwip/sys.h"
 
 uint16_t GlobalBuffer[200];
-SemaphoreHandle_t synchroTaskSemaphore;
 
 //struct netbuf *GlobalBuffer;
 
@@ -73,11 +72,11 @@ static void server_thread(void *arg)
 
 	while (1)
 	{
-		xSemaphoreTake(synchroTaskSemaphore,portMAX_DELAY);
 		netconn_recv(conn, &buf);
+		wait_for_DMA_Transfer();
 		netbuf_data(buf, (void**)&msg, &len);//CREO NO ES NECESARIA ESTA LINEA
 
-		//PRINTF("%i" ,msg[0]);
+//		PRINTF("%i" ,msg[0]);
 
 		netbuf_copy(buf, GlobalBuffer, sizeof(GlobalBuffer));//ESTA ES LA BUENA
 		//PRINTF("%i ", buffer[0]);
@@ -88,7 +87,7 @@ static void server_thread(void *arg)
 //
 //		}
 
-		//		buf_send=buf;
+//				buf_send=buf;
 
 		netbuf_delete(buf);
 
@@ -125,12 +124,9 @@ static void server_thread(void *arg)
 void udpecho_init(void)
 {
 
-
-	synchroTaskSemaphore = xSemaphoreCreateBinary();
 	//	sys_thread_new("client", client_thread, NULL, 300, 1);
 	sys_thread_new("server", server_thread, NULL, 300, 2);
 
 }
-
 
 #endif /* LWIP_NETCONN */

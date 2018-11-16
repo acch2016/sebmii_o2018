@@ -53,6 +53,7 @@
 
 #include "fsl_edma.h"
 #include "fsl_dmamux.h"
+#include "menu.h"
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
@@ -138,7 +139,7 @@ static void stack_init(void *arg)
            ((u8_t *)&fsl_netif0_gw)[2], ((u8_t *)&fsl_netif0_gw)[3]);
     PRINTF("************************************************\r\n");
 
-//    udpecho_init();
+    udpecho_init();
 
     vTaskDelete(NULL);
 }
@@ -159,9 +160,8 @@ int main(void)
     if(sys_thread_new("main", stack_init, NULL, INIT_THREAD_STACKSIZE, INIT_THREAD_PRIO) == NULL)
         LWIP_ASSERT("main(): Task creation failed.", 0);
 
-
     DMA_Init();
-    udpecho_init();
+    menu_init();
     audio_player_init();
     vTaskStartScheduler();
 

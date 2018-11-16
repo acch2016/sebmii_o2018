@@ -1,12 +1,14 @@
 /*
  * SOUND_PLAYER.h
  *
- *  Created on: Nov 8, 2018
- *      Author: acc
+ *  Created on: 14/06/2018
+ *      Author: Cursos
  */
 
 #ifndef SOUND_PLAYER_H_
 #define SOUND_PLAYER_H_
+
+
 
 #include "MK64F12.h"
 #include "FreeRTOS.h"
@@ -60,5 +62,6 @@ void DAC_config(void);
 void LED_config(void);
 void PIN_config(void);
 static void audio_player(void *arg);
+
 
 #endif /* SOUND_PLAYER_H_ */
