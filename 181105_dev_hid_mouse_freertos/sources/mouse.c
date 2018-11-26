@@ -166,28 +166,88 @@ static usb_status_t USB_DeviceHidMouseAction(void)
 {
     static int8_t x = 0U;
     static int8_t y = 0U;
-    static int8_t z = 0U;
+    static int8_t first = 1;
+    static int8_t start_mouse_count = 0U;
+    static int8_t keyboard_count = 0U;
+
     enum
     {
+    	KEYBOARD_1,
+    	KEYBOARD_2,
+    	KEYBOARD_3,
     	START_MOUSE,
         RIGHT,
         DOWN,
         LEFT,
         UP,
-		LETRA_TEST
+		MOUSE_END,
+		KEYBOARD_RESET,
+		KEYBOARD_4,
+		KEYBOARD_5,
+		KEYBOARD_6,
+		KEYBOARD_RESET_2,
+		KEYBOARD_7,
+		KEYBOARD_8,
+		MOUSE_CLICKP1,
+		MOUSE_CLICKP2,
+		MOUSE_CLICKP3,
+		KEYBOARD_RESET_3,
+		KEYBOARD_9,
+		KEYBOARD_10,
+		KEYBOARD_RESET_4,
+		KEYBOARD_11,
+		KEYBOARD_12,
+		RIGHT_LONG,
+		MOUSE_CLICKP1_2,
+		MOUSE_CLICKP2_2,
+		MOUSE_CLICKP3_2,
+		KEYBOARD_13,
+		ENDING
     };
-    static uint8_t dir = START_MOUSE;
+    static uint8_t dir = KEYBOARD_1;
 
     switch (dir)
     {
+    	case KEYBOARD_1:
+			keyboard_count++;
+			if(keyboard_count > 200U)
+			{
+				keyboard_count = 0;
+				dir++;
+				g_UsbDeviceHidMouse.buffer[0] = 2U; // Report_id
+				g_UsbDeviceHidMouse.buffer[3] = KEY_LEFT_GUI; // Key to press
+				g_UsbDeviceHidMouse.buffer[4] = KEY_R; // Key to press
+			}
+			break;
+    	case KEYBOARD_2:
+			keyboard_count++;
+			if(keyboard_count > 200U)
+			{
+				keyboard_count = 0;
+				dir++;
+				g_UsbDeviceHidMouse.buffer[0] = 2U; // Report_id
+				g_UsbDeviceHidMouse.buffer[3] = KEY_M; // Key to press
+				g_UsbDeviceHidMouse.buffer[4] = KEY_S; // Key to press
+				g_UsbDeviceHidMouse.buffer[5] = KEY_P; // Key to press
+				g_UsbDeviceHidMouse.buffer[6] = KEY_A; // Key to press
+				g_UsbDeviceHidMouse.buffer[7] = KEY_I; // Key to press
+				g_UsbDeviceHidMouse.buffer[8] = KEY_N; // Key to press
+			}
+			break;
+    	case KEYBOARD_3:
+			dir++;
+			g_UsbDeviceHidMouse.buffer[0] = 2U; // Report_id
+			g_UsbDeviceHidMouse.buffer[3] = KEY_T; // Key to press
+			g_UsbDeviceHidMouse.buffer[4] = KEY_ENTER; // Key to press
+			break;
 		case START_MOUSE:
-			/* Move right. Increase X value. */
+			/* Set the click value to 0 */
 			g_UsbDeviceHidMouse.buffer[0] = 1U; // Report_id
 			g_UsbDeviceHidMouse.buffer[1] = 0U; // Click (es un toggle)
 			g_UsbDeviceHidMouse.buffer[2] = 0U;	// Mov. X
 			g_UsbDeviceHidMouse.buffer[3] = 0U; // Mov. Y
-			x++;
-			if (x > 99U)
+			start_mouse_count++;
+			if(start_mouse_count > 200U)
 			{
 				dir++;
 			}
@@ -240,20 +300,278 @@ static usb_status_t USB_DeviceHidMouseAction(void)
                 dir++;
             }
             break;
-        case LETRA_TEST:
-			z++;
-			if (z > 100U)
+        case MOUSE_END:
+            /* Move up. Discrease Y value. */
+        	g_UsbDeviceHidMouse.buffer[0] = 1U; // Report_id
+        	g_UsbDeviceHidMouse.buffer[1] = 0U; // Click (es un toggle)
+            g_UsbDeviceHidMouse.buffer[2] = 0U; // Mov. X
+            g_UsbDeviceHidMouse.buffer[3] = 0U; // Mov. Y
+			start_mouse_count--;
+			if(start_mouse_count < 2U)
 			{
-				dir = START_MOUSE;
-				z = 0U;
-	            /* Move up. Discrease Y value. */
-	        	g_UsbDeviceHidMouse.buffer[0] = 2U; // Report_id
-	        	g_UsbDeviceHidMouse.buffer[3] = KEY_M; // Letra
+				dir++;
 			}
             break;
-        default:
+    	case KEYBOARD_RESET:
+			g_UsbDeviceHidMouse.buffer[0] = 2U; // Report_id
+			g_UsbDeviceHidMouse.buffer[3] = 0x00U; // Key to press
+			g_UsbDeviceHidMouse.buffer[4] = 0x00U; // Key to press
+			g_UsbDeviceHidMouse.buffer[5] = 0x00U; // Key to press
+			g_UsbDeviceHidMouse.buffer[6] = 0x00U; // Key to press
+			g_UsbDeviceHidMouse.buffer[7] = 0x00U; // Key to press
+			g_UsbDeviceHidMouse.buffer[8] = 0x00U; // Key to press
+			dir++;
+			break;
+    	case KEYBOARD_4:
+			keyboard_count++;
+			if(keyboard_count > 400U)
+			{
+				keyboard_count = 0;
+				dir++;
+				g_UsbDeviceHidMouse.buffer[0] = 2U; // Report_id
+				g_UsbDeviceHidMouse.buffer[3] = KEY_LEFT_GUI; // Key to press
+				g_UsbDeviceHidMouse.buffer[4] = KEY_R; // Key to press
+			}
+			break;
+    	case KEYBOARD_5:
+			keyboard_count++;
+			if(keyboard_count > 200U)
+			{
+				keyboard_count = 0;
+				dir++;
+				g_UsbDeviceHidMouse.buffer[0] = 2U; // Report_id
+				g_UsbDeviceHidMouse.buffer[3] = KEY_N; // Key to press
+				g_UsbDeviceHidMouse.buffer[4] = KEY_O; // Key to press
+				g_UsbDeviceHidMouse.buffer[5] = KEY_T; // Key to press
+				g_UsbDeviceHidMouse.buffer[6] = KEY_E; // Key to press
+				g_UsbDeviceHidMouse.buffer[7] = KEY_P; // Key to press
+				g_UsbDeviceHidMouse.buffer[8] = KEY_A; // Key to press
+			}
+			break;
+    	case KEYBOARD_6:
+			dir++;
+			g_UsbDeviceHidMouse.buffer[0] = 2U; // Report_id
+			g_UsbDeviceHidMouse.buffer[3] = KEY_D; // Key to press
+			g_UsbDeviceHidMouse.buffer[4] = KEY_ENTER; // Key to press
+			break;
+    	case KEYBOARD_RESET_2:
+			g_UsbDeviceHidMouse.buffer[0] = 2U; // Report_id
+			g_UsbDeviceHidMouse.buffer[3] = 0x00U; // Key to press
+			g_UsbDeviceHidMouse.buffer[4] = 0x00U; // Key to press
+			g_UsbDeviceHidMouse.buffer[5] = 0x00U; // Key to press
+			g_UsbDeviceHidMouse.buffer[6] = 0x00U; // Key to press
+			g_UsbDeviceHidMouse.buffer[7] = 0x00U; // Key to press
+			g_UsbDeviceHidMouse.buffer[8] = 0x00U; // Key to press
+			if(1 == first)
+			{
+				dir++;
+				first = 0;
+			}
+			else
+			{
+				dir = KEYBOARD_8;
+			}
+			break;
+    	case KEYBOARD_7:
+			keyboard_count++;
+			if(keyboard_count > 200U)
+			{
+				keyboard_count = 0;
+				dir = KEYBOARD_RESET;
+				g_UsbDeviceHidMouse.buffer[0] = 2U; // Report_id
+				g_UsbDeviceHidMouse.buffer[3] = KEY_LEFT_GUI; // Key to press
+				g_UsbDeviceHidMouse.buffer[4] = KEY_LEFTARROW; // Key to press
+			}
+			break;
+    	case KEYBOARD_8:
+			keyboard_count++;
+			if(keyboard_count > 200U)
+			{
+				keyboard_count = 0;
+				dir++;
+				g_UsbDeviceHidMouse.buffer[0] = 2U; // Report_id
+				g_UsbDeviceHidMouse.buffer[3] = KEY_LEFT_GUI; // Key to press
+				g_UsbDeviceHidMouse.buffer[4] = KEY_RIGHTARROW; // Key to press
+			}
+			break;
+		case MOUSE_CLICKP1:
+			/* Set the click value to 0 */
+			g_UsbDeviceHidMouse.buffer[0] = 1U; // Report_id
+			g_UsbDeviceHidMouse.buffer[1] = 0U; // Click (es un toggle)
+			g_UsbDeviceHidMouse.buffer[2] = 0U;	// Mov. X
+			g_UsbDeviceHidMouse.buffer[3] = 0U; // Mov. Y
+			start_mouse_count++;
+			if(start_mouse_count > 200U)
+			{
+				dir++;
+			}
+			break;
+		case MOUSE_CLICKP2:
+			/* Set the click value to 0 */
+			g_UsbDeviceHidMouse.buffer[0] = 1U; // Report_id
+			g_UsbDeviceHidMouse.buffer[1] = 1U; // Click (es un toggle)
+			g_UsbDeviceHidMouse.buffer[2] = 0U;	// Mov. X
+			g_UsbDeviceHidMouse.buffer[3] = 0U; // Mov. Y
+			start_mouse_count++;
+			if(start_mouse_count > 200U)
+			{
+				dir++;
+			}
+			break;
+		case MOUSE_CLICKP3:
+			/* Set the click value to 0 */
+			g_UsbDeviceHidMouse.buffer[0] = 1U; // Report_id
+			g_UsbDeviceHidMouse.buffer[1] = 0U; // Click (es un toggle)
+			g_UsbDeviceHidMouse.buffer[2] = 0U;	// Mov. X
+			g_UsbDeviceHidMouse.buffer[3] = 0U; // Mov. Y
+			start_mouse_count++;
+			if(start_mouse_count > 200U)
+			{
+				dir++;
+			}
+			break;
+    	case KEYBOARD_RESET_3:
+			g_UsbDeviceHidMouse.buffer[0] = 2U; // Report_id
+			g_UsbDeviceHidMouse.buffer[3] = 0x00U; // Key to press
+			g_UsbDeviceHidMouse.buffer[4] = 0x00U; // Key to press
+			g_UsbDeviceHidMouse.buffer[5] = 0x00U; // Key to press
+			g_UsbDeviceHidMouse.buffer[6] = 0x00U; // Key to press
+			g_UsbDeviceHidMouse.buffer[7] = 0x00U; // Key to press
+			g_UsbDeviceHidMouse.buffer[8] = 0x00U; // Key to press
+			dir++;
+			break;
+    	case KEYBOARD_9:
+			dir++;
+			g_UsbDeviceHidMouse.buffer[0] = 2U; // Report_id
+			g_UsbDeviceHidMouse.buffer[3] = KEY_H; // Key to press
+			g_UsbDeviceHidMouse.buffer[4] = KEY_O; // Key to press
+			g_UsbDeviceHidMouse.buffer[5] = KEY_L; // Key to press
+			g_UsbDeviceHidMouse.buffer[6] = KEY_A; // Key to press
+			g_UsbDeviceHidMouse.buffer[7] = KEY_SPACEBAR; // Key to press
+			g_UsbDeviceHidMouse.buffer[8] = KEY_M; // Key to press
+			break;
+    	case KEYBOARD_10:
+			dir++;
+			g_UsbDeviceHidMouse.buffer[0] = 2U; // Report_id
+			g_UsbDeviceHidMouse.buffer[3] = KEY_U; // Key to press
+			g_UsbDeviceHidMouse.buffer[4] = KEY_N; // Key to press
+			g_UsbDeviceHidMouse.buffer[5] = KEY_D; // Key to press
+			g_UsbDeviceHidMouse.buffer[6] = KEY_0_CPARENTHESIS; // Key to press
+			g_UsbDeviceHidMouse.buffer[7] = KEY_LEFTSHIFT; // Key to press
+			g_UsbDeviceHidMouse.buffer[8] = KEY_1_EXCLAMATION_MARK; // Key to press
+			break;
+    	case KEYBOARD_RESET_4:
+			g_UsbDeviceHidMouse.buffer[0] = 2U; // Report_id
+			g_UsbDeviceHidMouse.buffer[3] = 0x00U; // Key to press
+			g_UsbDeviceHidMouse.buffer[4] = 0x00U; // Key to press
+			g_UsbDeviceHidMouse.buffer[5] = 0x00U; // Key to press
+			g_UsbDeviceHidMouse.buffer[6] = 0x00U; // Key to press
+			g_UsbDeviceHidMouse.buffer[7] = 0x00U; // Key to press
+			g_UsbDeviceHidMouse.buffer[8] = 0x00U; // Key to press
+			dir++;
+			break;
+    	case KEYBOARD_11:
+			keyboard_count++;
+			if(keyboard_count > 300U)
+			{
+				dir++;
+				g_UsbDeviceHidMouse.buffer[0] = 2U; // Report_id
+				g_UsbDeviceHidMouse.buffer[3] = KEY_RIGHTCONTROL; // Key to press
+				g_UsbDeviceHidMouse.buffer[4] = KEY_E; // Key to press
+			}
+			break;
+    	case KEYBOARD_12:
+			keyboard_count++;
+			if(keyboard_count > 300U)
+			{
+				keyboard_count = 0;
+				dir++;
+				g_UsbDeviceHidMouse.buffer[0] = 2U; // Report_id
+				g_UsbDeviceHidMouse.buffer[3] = KEY_RIGHTCONTROL; // Key to press
+				g_UsbDeviceHidMouse.buffer[4] = KEY_C; // Key to press
+				x=0;
+			}
+			break;
+        case RIGHT_LONG:
+            /* Move right. Increase X value. */
+        	g_UsbDeviceHidMouse.buffer[0] = 1U; // Report_id
+            g_UsbDeviceHidMouse.buffer[1] = 0U; // Click (es un toggle)
+            g_UsbDeviceHidMouse.buffer[2] = 10U;	// Mov. X
+            g_UsbDeviceHidMouse.buffer[3] = 0U; // Mov. Y
+            x++;
+            if (x > 500U)
+            {
+                dir++;
+            }
             break;
+		case MOUSE_CLICKP1_2:
+			/* Set the click value to 0 */
+			g_UsbDeviceHidMouse.buffer[0] = 1U; // Report_id
+			g_UsbDeviceHidMouse.buffer[1] = 0U; // Click (es un toggle)
+			g_UsbDeviceHidMouse.buffer[2] = 0U;	// Mov. X
+			g_UsbDeviceHidMouse.buffer[3] = 0U; // Mov. Y
+			start_mouse_count++;
+			if(start_mouse_count > 200U)
+			{
+				dir++;
+			}
+			break;
+		case MOUSE_CLICKP2_2:
+			/* Set the click value to 0 */
+			g_UsbDeviceHidMouse.buffer[0] = 1U; // Report_id
+			g_UsbDeviceHidMouse.buffer[1] = 1U; // Click (es un toggle)
+			g_UsbDeviceHidMouse.buffer[2] = 0U;	// Mov. X
+			g_UsbDeviceHidMouse.buffer[3] = 0U; // Mov. Y
+			start_mouse_count++;
+			if(start_mouse_count > 200U)
+			{
+				dir++;
+			}
+			break;
+		case MOUSE_CLICKP3_2:
+			/* Set the click value to 0 */
+			g_UsbDeviceHidMouse.buffer[0] = 1U; // Report_id
+			g_UsbDeviceHidMouse.buffer[1] = 0U; // Click (es un toggle)
+			g_UsbDeviceHidMouse.buffer[2] = 0U;	// Mov. X
+			g_UsbDeviceHidMouse.buffer[3] = 0U; // Mov. Y
+			start_mouse_count++;
+			if(start_mouse_count > 200U)
+			{
+				dir++;
+			}
+			break;
+    	case KEYBOARD_13:
+			keyboard_count++;
+			if(keyboard_count > 200U)
+			{
+				keyboard_count = 0;
+				dir++;
+				g_UsbDeviceHidMouse.buffer[0] = 2U; // Report_id
+				g_UsbDeviceHidMouse.buffer[3] = KEY_RIGHTCONTROL; // Key to press
+				g_UsbDeviceHidMouse.buffer[4] = KEY_V; // Key to press
+				x=0;
+			}
+			break;
+    	case ENDING:
+			g_UsbDeviceHidMouse.buffer[0] = 2U; // Report_id
+			g_UsbDeviceHidMouse.buffer[3] = 0x00U; // Key to press
+			g_UsbDeviceHidMouse.buffer[4] = 0x00U; // Key to press
+			g_UsbDeviceHidMouse.buffer[5] = 0x00U; // Key to press
+			g_UsbDeviceHidMouse.buffer[6] = 0x00U; // Key to press
+			g_UsbDeviceHidMouse.buffer[7] = 0x00U; // Key to press
+			g_UsbDeviceHidMouse.buffer[8] = 0x00U; // Key to press
+			break;
+    	default:
+			g_UsbDeviceHidMouse.buffer[0] = 2U; // Report_id
+			g_UsbDeviceHidMouse.buffer[3] = 0x00U; // Key to press
+			g_UsbDeviceHidMouse.buffer[4] = 0x00U; // Key to press
+			g_UsbDeviceHidMouse.buffer[5] = 0x00U; // Key to press
+			g_UsbDeviceHidMouse.buffer[6] = 0x00U; // Key to press
+			g_UsbDeviceHidMouse.buffer[7] = 0x00U; // Key to press
+			g_UsbDeviceHidMouse.buffer[8] = 0x00U; // Key to press
+    		break;
     }
+
     /* Send mouse report to the host */
     return USB_DeviceHidSend(g_UsbDeviceHidMouse.hidHandle, USB_HID_MOUSE_ENDPOINT_IN, g_UsbDeviceHidMouse.buffer,
                              USB_HID_MOUSE_REPORT_LENGTH);
@@ -656,11 +974,7 @@ void APP_task(void *handle)
     }
 }
 
-#if defined(__CC_ARM) || defined(__GNUC__)
-int main(void)
-#else
 void main(void)
-#endif
 {
     BOARD_InitPins();
     BOARD_BootClockRUN();
