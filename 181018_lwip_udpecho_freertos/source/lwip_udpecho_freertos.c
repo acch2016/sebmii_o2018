@@ -163,6 +163,7 @@ int main(void)
     DMA_Init();
     menu_init();
     audio_player_init();
+//    stats_init();
     vTaskStartScheduler();
 
     /* Will not get here unless a task calls vTaskEndScheduler ()*/

@@ -127,6 +127,7 @@ uint8_t g_UsbDeviceHidMouseReportDescriptor[] = {
     0x09U, 0x01U, /* Usage (Pointer) */
 
     0xA1U, 0x00U, /* Collection (Physical) */
+	0x85U, 0x01U,                    //          REPORT_ID (1)
     0x05U, 0x09U, /* Usage Page (Buttons) */
     0x19U, 0x01U, /* Usage Minimum (01U) */
     0x29U, 0x03U, /* Usage Maximum (03U) */
@@ -153,7 +154,49 @@ uint8_t g_UsbDeviceHidMouseReportDescriptor[] = {
 
     0x81U, 0x06U, /* Input(Data, Variable, Relative), Three position bytes (X & Y & Z)*/
     0xC0U,        /* End collection, Close Pointer collection*/
-    0xC0U         /* End collection, Close Mouse collection */
+    0xC0U,         /* End collection, Close Mouse collection */
+
+///
+
+    0x05U, 0x01U, /* Usage Page (Generic Desktop)*/
+    0x09U, 0x06U, /* Usage (Keyboard) */
+    0xA1U, 0x01U, /* Collection (Application) */
+    0x85U, 0x02U,                    //   REPORT_ID (2)
+    0x75U, 0x01U, /* Report Size (1U) */
+    0x95U, 0x08U, /* Report Count (8U) */
+    0x05U, 0x07U, /* Usage Page (Key Codes) */
+    0x19U, 0xE0U, /* Usage Minimum (224U) */
+    0x29U, 0xE7U, /* Usage Maximum (231U) */
+
+    0x15U, 0x00U, /* Logical Minimum (0U) */
+    0x25U, 0x01U, /* Logical Maximum (1U) */
+    0x81U, 0x02U, /* Input(Data, Variable, Absolute) Modifier byte */
+
+    0x95U, 0x01U, /* Report Count (1U) */
+    0x75U, 0x08U, /* Report Size (8U) */
+    0x81U, 0x01U, /* Input (Constant), Reserved byte */
+    0x95U, 0x05U, /* Report Count (5U) */
+    0x75U, 0x01U, /* Report Size (1U) */
+
+    0x05U, 0x08U, /* Usage Page (Page# for LEDs) */
+    0x19U, 0x01U, /* Usage Minimum (1U) */
+    0x29U, 0x05U, /* Usage Maximum (5U) */
+    0x91U, 0x02U, /* Output (Data, Variable, Absolute) LED report */
+    0x95U, 0x01U, /* Report Count (1U) */
+    0x75U, 0x03U, /* Report Size (3U) */
+    0x91U, 0x01U, /* Output (Constant), LED report padding */
+
+    0x95U, 0x06U, /* Report Count (6U) */
+    0x75U, 0x08U, /* Report Size (8U) */
+    0x15U, 0x00U, /* Logical Minimum (0U) */
+    0x25U, 0xFFU, /* Logical Maximum (255U) */
+    0x05U, 0x07U, /* Usage Page (Key Codes) */
+    0x19U, 0x00U, /* Usage Minimum (0U) */
+    0x29U, 0xFFU, /* Usage Maximum (255U) */
+
+    0x81U, 0x00U, /* Input(Data, Array), Key arrays(6U bytes)*/
+    0xC0U,        /* End collection */
+
 };
 
 USB_DMA_INIT_DATA_ALIGN(USB_DATA_ALIGN_SIZE)

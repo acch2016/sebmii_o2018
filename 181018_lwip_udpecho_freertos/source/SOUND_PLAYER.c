@@ -7,8 +7,26 @@
 #include "SOUND_PLAYER.h"
 #include "udpecho.h"
 
+void FTM_config(void)
+{
+	ftm_config_t ftmInfo;
+	FTM_GetDefaultConfig(&ftmInfo);
+	/* Divide FTM clock by 4 */
+	ftmInfo.prescale = kFTM_Prescale_Divide_4;
+    /* Initialize FTM module */
+    FTM_Init(FTM0, &ftmInfo);
+    /* Set timer period. */
+    FTM_SetTimerPeriod(FTM0, USEC_TO_COUNT(50U, (CLOCK_GetFreq(kCLOCK_BusClk)/4)));
 
-void PITconfig()
+    FTM_EnableInterrupts(FTM0, kFTM_TimeOverflowInterruptEnable);
+
+    EnableIRQ(FTM0_IRQn);
+	NVIC_SetPriority(FTM0_IRQn,5);
+    FTM_StartTimer(FTM0, kFTM_SystemClock);
+
+}
+
+void PIT_config(void)
 {
 	pit_config_t pit_config;
 	PIT_GetDefaultConfig(&pit_config);
@@ -19,7 +37,7 @@ void PITconfig()
 //	TODO Fs
 	/* Set timer period for channel 0 */
 	PIT_SetTimerPeriod(PIT, kPIT_Chnl_0, USEC_TO_COUNT(50U, CLOCK_GetFreq(kCLOCK_BusClk)));//como son 100 valores, le toma mas tiempo y por lo tanto la frecuencia es dos ceros mas abajo
-	//    PIT_SetTimerPeriod(PIT, kPIT_Chnl_0, CLOCK_GetBusClkFreq());
+//	PIT_SetTimerPeriod(PIT, kPIT_Chnl_0, CLOCK_GetBusClkFreq());
 	PIT_GetStatusFlags(PIT, kPIT_Chnl_0);
 	PIT_EnableInterrupts(PIT, kPIT_Chnl_0, kPIT_TimerInterruptEnable);
 	NVIC_EnableIRQ(PIT0_IRQn);
@@ -31,7 +49,6 @@ void PITconfig()
 void DAC_config(void)
 {
 	dac_config_t dacConfigStruct;
-
 	/* Configure the DAC. */
 	/*
 	 * dacConfigStruct.referenceVoltageSource = kDAC_ReferenceVoltageSourceVref2;
@@ -39,56 +56,22 @@ void DAC_config(void)
 	 */
 	DAC_GetDefaultConfig(&dacConfigStruct);
 	DAC_Init(DEMO_DAC_BASEADDR, &dacConfigStruct);
-	//        NVIC_SetPriority(DAC0_IRQn);
+//	NVIC_SetPriority(DAC0_IRQn,5);
 	DAC_Enable(DEMO_DAC_BASEADDR, true); /* Enable output. */
-
-}
-void LED_config(void)
-{
-	CLOCK_EnableClock(kCLOCK_PortB);//B
-	port_pin_config_t config_led =
-	{
-			kPORT_PullDisable, kPORT_SlowSlewRate, kPORT_PassiveFilterDisable,
-			kPORT_OpenDrainDisable, kPORT_LowDriveStrength, kPORT_MuxAsGpio,
-			kPORT_UnlockRegister,
-	};
-	PORT_SetPinConfig(PORTB, 21, &config_led);    //B
-	gpio_pin_config_t led_config_gpio = { kGPIO_DigitalOutput, 1 };
-	GPIO_PinInit(GPIOB, 21, &led_config_gpio);//B
-}
-void PIN_config(void)
-{
-	CLOCK_EnableClock(kCLOCK_PortA); //toogle interrupcion PIT
-	CLOCK_EnableClock(kCLOCK_PortE); //toogle muestra DAC
-	CLOCK_EnableClock(kCLOCK_PortC); //toogle muestra DAC
-
-	port_pin_config_t config_pin =
-	{
-			kPORT_PullUp, kPORT_SlowSlewRate, kPORT_PassiveFilterDisable,
-			kPORT_OpenDrainDisable, kPORT_LowDriveStrength, kPORT_MuxAsGpio,
-			kPORT_UnlockRegister,
-	};
-	PORT_SetPinConfig(PORTA, 1, &config_pin);
-	PORT_SetPinConfig(PORTE, 26, &config_pin);
-	PORT_SetPinConfig(PORTC, 4, &config_pin);
-
-	gpio_pin_config_t pin_config_gpio = { kGPIO_DigitalOutput, 1 };
-	GPIO_PinInit(GPIOA, 1, &pin_config_gpio);
-	GPIO_PinInit(GPIOE, 26, &pin_config_gpio);
-	GPIO_PinInit(GPIOC, 4, &pin_config_gpio);
-
 }
 
-static void audio_player(void*arg)
+
+static void audio_player(void * arg)
 {
 	//	event = xEventGroupCreate();
 
 	/* This handler that is originally shared in this module is now pointing to the binarySemaphore created */
 	/* the creation of the semaphore happens only one single time*/
-	PITconfig();
+	FTM_config();
+//	PIT_config();
 	DAC_config();
 //	LED_config();
-//	PIN_config();
+	PIN_config();
 
 	uint16_t *GlobalBufferPtr;
 	//	struct netbuf *buf;
@@ -97,8 +80,10 @@ static void audio_player(void*arg)
 
 	while (1)
 	{
+		GPIO_WritePinOutput(GPIOE, 26, 1);    //G OFF
 		xSemaphoreTake(pitToogleSemaphore,portMAX_DELAY);
-		//GPIO_TogglePinsOutput(GPIOA, 1 << 1);
+		GPIO_WritePinOutput(GPIOE, 26, 0);    //G ON
+		GPIO_TogglePinsOutput(GPIOA, 1 << 1);
 
 		static uint8_t i_FILL_ping_PLAY_pong = 0;
 		static uint8_t i_FILL_pong_PLAY_ping = 0;
@@ -166,6 +151,9 @@ static void audio_player(void*arg)
 		//		DAC_SetBufferValue(DAC0, 0U, valores[i_SinValue]);
 		//		i_SinValue ++;
 
+//		TODO
+//		VTaskDelay(portMAX_DELAY);
+//		vTaskSuspend(NULL);
 	}
 
 }
@@ -179,7 +167,7 @@ void audio_player_init(void)
 
 
 
-uint8_t counter = 0;
+//uint8_t counter = 0;
 void PIT0_IRQHandler()
 {
 	BaseType_t xHigherPriorityTaskWoken;
@@ -190,6 +178,17 @@ void PIT0_IRQHandler()
 	//	counter++;
 	//	PRINTF("\r\n%d\r\n", counter);
 	//en lugar de poner logica del DAC aqui, se puso un evento
+	xHigherPriorityTaskWoken = pdFALSE;
+	xSemaphoreGiveFromISR(pitToogleSemaphore, &xHigherPriorityTaskWoken );
+	portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
+}
+
+void FTM0_IRQHandler(void)
+{
+	BaseType_t xHigherPriorityTaskWoken;
+	GPIO_TogglePinsOutput(GPIOC, 1 << 3); // PTC3
+    /* Clear interrupt flag.*/
+    FTM_ClearStatusFlags(FTM0, kFTM_TimeOverflowFlag);
 	xHigherPriorityTaskWoken = pdFALSE;
 	xSemaphoreGiveFromISR(pitToogleSemaphore, &xHigherPriorityTaskWoken );
 	portYIELD_FROM_ISR( xHigherPriorityTaskWoken );

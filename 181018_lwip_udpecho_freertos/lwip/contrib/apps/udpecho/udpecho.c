@@ -40,7 +40,7 @@
 #include "lwip/sys.h"
 
 uint16_t GlobalBuffer[200];
-
+uint64_t recv_data_counter = 0;
 //struct netbuf *GlobalBuffer;
 
 //struct netbuf* AudioPlayer_getBuffer()
@@ -53,28 +53,42 @@ uint16_t* AudioPlayer_getBuffer()
 	return GlobalBuffer;
 }
 
+uint64_t* SoundPlayer_getCounter()
+{
+	return &recv_data_counter;
+}
+
 static void server_thread(void *arg)
 {
+	err_t err;
+
 	struct netconn *conn;
 	struct netbuf *buf;
 
-	uint16_t *msg;
+//	uint16_t *msg;
 
-	uint16_t len;
+//	uint16_t len;
 	//uint16_t buffer[200];
 	//	memset(buffer[0], 0, sizeof(buffer[0]));
 
 	LWIP_UNUSED_ARG(arg);
 	conn = netconn_new(NETCONN_UDP);
-	netconn_bind(conn, IP_ADDR_ANY, 54321);//ip4
+	netconn_bind(conn, IP_ADDR_ANY, 55321);//ip4
 
 
 
 	while (1)
 	{
-		netconn_recv(conn, &buf);
+		GPIO_WritePinOutput(GPIOC, 2, 1);    // OFF
+		if ((err = netconn_recv(conn, &buf)) == ERR_OK)
+		{
+			recv_data_counter++;
+		}
+//		netconn_recv(conn, &buf);
 		wait_for_DMA_Transfer();
-		netbuf_data(buf, (void**)&msg, &len);//CREO NO ES NECESARIA ESTA LINEA
+		GPIO_WritePinOutput(GPIOC, 2, 0);    // ON
+
+//		netbuf_data(buf, (void**)&msg, &len);//CREO NO ES NECESARIA ESTA LINEA
 
 //		PRINTF("%i" ,msg[0]);
 
@@ -125,7 +139,7 @@ void udpecho_init(void)
 {
 
 	//	sys_thread_new("client", client_thread, NULL, 300, 1);
-	sys_thread_new("server", server_thread, NULL, 300, 2);
+	sys_thread_new("server", server_thread, NULL, DEFAULT_THREAD_STACKSIZE, configMAX_PRIORITIES-2);
 
 }
 

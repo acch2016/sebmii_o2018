@@ -34,7 +34,7 @@
 
 #include "stdint.h"
 #include "dma_parallelmemcpy.h"
-#include "fsl_gpio.h"
+#include "testpins.h"
 //#include "MK64F12.h"
 //#include "FreeRTOS.h"
 //#include "task.h"
@@ -46,5 +46,7 @@ void udpecho_init(void);
 * Prototypes
 ******************************************************************************/
 uint16_t* AudioPlayer_getBuffer(void);
+uint16_t* SoundPlayer_getCounter(void);
+
 
 #endif /* LWIP_UDPECHO_H */

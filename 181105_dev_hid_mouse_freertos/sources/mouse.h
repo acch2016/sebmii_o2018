@@ -61,8 +61,8 @@
 #else
 #define USB_DEVICE_INTERRUPT_PRIORITY (3U)
 #endif
-
-#define USB_HID_MOUSE_REPORT_LENGTH (0x04U)
+//TODO cambie de 4 a9
+#define USB_HID_MOUSE_REPORT_LENGTH (0x09U)
 typedef struct _usb_hid_mouse_struct
 {
     usb_device_handle deviceHandle;

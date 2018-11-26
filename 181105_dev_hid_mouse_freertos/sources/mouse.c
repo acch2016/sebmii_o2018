@@ -47,6 +47,8 @@
 #include "board.h"
 #include "fsl_debug_console.h"
 
+#include "hid_keyboard.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #if (defined(FSL_FEATURE_SOC_SYSMPU_COUNT) && (FSL_FEATURE_SOC_SYSMPU_COUNT > 0U))
@@ -164,21 +166,38 @@ static usb_status_t USB_DeviceHidMouseAction(void)
 {
     static int8_t x = 0U;
     static int8_t y = 0U;
+    static int8_t z = 0U;
     enum
     {
+    	START_MOUSE,
         RIGHT,
         DOWN,
         LEFT,
-        UP
+        UP,
+		LETRA_TEST
     };
-    static uint8_t dir = RIGHT;
+    static uint8_t dir = START_MOUSE;
 
     switch (dir)
     {
+		case START_MOUSE:
+			/* Move right. Increase X value. */
+			g_UsbDeviceHidMouse.buffer[0] = 1U; // Report_id
+			g_UsbDeviceHidMouse.buffer[1] = 0U; // Click (es un toggle)
+			g_UsbDeviceHidMouse.buffer[2] = 0U;	// Mov. X
+			g_UsbDeviceHidMouse.buffer[3] = 0U; // Mov. Y
+			x++;
+			if (x > 99U)
+			{
+				dir++;
+			}
+			break;
         case RIGHT:
             /* Move right. Increase X value. */
-            g_UsbDeviceHidMouse.buffer[1] = 2U;
-            g_UsbDeviceHidMouse.buffer[2] = 0U;
+        	g_UsbDeviceHidMouse.buffer[0] = 1U; // Report_id
+            g_UsbDeviceHidMouse.buffer[1] = 1U; // Click (es un toggle)
+            g_UsbDeviceHidMouse.buffer[2] = 2U;	// Mov. X
+            g_UsbDeviceHidMouse.buffer[3] = 0U; // Mov. Y
             x++;
             if (x > 99U)
             {
@@ -187,8 +206,10 @@ static usb_status_t USB_DeviceHidMouseAction(void)
             break;
         case DOWN:
             /* Move down. Increase Y value. */
-            g_UsbDeviceHidMouse.buffer[1] = 0U;
-            g_UsbDeviceHidMouse.buffer[2] = 2U;
+        	g_UsbDeviceHidMouse.buffer[0] = 1U; // Report_id
+            g_UsbDeviceHidMouse.buffer[1] = 1U; // Click (es un toggle)
+            g_UsbDeviceHidMouse.buffer[2] = 0U;	// Mov. X
+            g_UsbDeviceHidMouse.buffer[3] = 2U; // Mov. Y
             y++;
             if (y > 99U)
             {
@@ -197,8 +218,10 @@ static usb_status_t USB_DeviceHidMouseAction(void)
             break;
         case LEFT:
             /* Move left. Discrease X value. */
-            g_UsbDeviceHidMouse.buffer[1] = (uint8_t)(-2);
-            g_UsbDeviceHidMouse.buffer[2] = 0U;
+        	g_UsbDeviceHidMouse.buffer[0] = 1U; // Report_id
+            g_UsbDeviceHidMouse.buffer[1] = 1U; // Click (es un toggle)
+            g_UsbDeviceHidMouse.buffer[2] = (uint8_t)(-2);	// Mov. X
+            g_UsbDeviceHidMouse.buffer[3] = 0U; // Mov. Y
             x--;
             if (x < 2U)
             {
@@ -207,13 +230,26 @@ static usb_status_t USB_DeviceHidMouseAction(void)
             break;
         case UP:
             /* Move up. Discrease Y value. */
-            g_UsbDeviceHidMouse.buffer[1] = 0U;
-            g_UsbDeviceHidMouse.buffer[2] = (uint8_t)(-2);
+        	g_UsbDeviceHidMouse.buffer[0] = 1U; // Report_id
+        	g_UsbDeviceHidMouse.buffer[1] = 1U; // Click (es un toggle)
+            g_UsbDeviceHidMouse.buffer[2] = 0U; // Mov. X
+            g_UsbDeviceHidMouse.buffer[3] = (uint8_t)(-2); // Mov. Y
             y--;
             if (y < 2U)
             {
-                dir = RIGHT;
+                dir++;
             }
+            break;
+        case LETRA_TEST:
+			z++;
+			if (z > 100U)
+			{
+				dir = START_MOUSE;
+				z = 0U;
+	            /* Move up. Discrease Y value. */
+	        	g_UsbDeviceHidMouse.buffer[0] = 2U; // Report_id
+	        	g_UsbDeviceHidMouse.buffer[3] = KEY_M; // Letra
+			}
             break;
         default:
             break;
