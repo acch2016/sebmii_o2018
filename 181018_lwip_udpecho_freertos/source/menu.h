@@ -8,6 +8,9 @@
 #ifndef MENU_H_
 #define MENU_H_
 
+extern int audio_toggle;
+extern int port_to_listen;
+
 void menu_init(void);
 
 

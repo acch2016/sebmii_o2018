@@ -17,18 +17,19 @@
 #include "event_groups.h"
 #include "timers.h"
 
-#include "udpecho.h"
+#include "audio_receiver.h"
 #include "netbuf.h"
 
 #include "board.h"
 //#include "peripherals.h"
 #include "clock_config.h"
-
+#include "pin_mux.h"
 #include "fsl_debug_console.h"
 #include "fsl_dac.h"
-#include "fsl_pit.h"//TODO
-#include "fsl_ftm.h"//TODO
-#include "testpins.h"
+#include "fsl_pit.h"
+#include "fsl_ftm.h"
+#include "fsl_port.h"
+#include "fsl_gpio.h"
 
 /*******************************************************************************
  * Definitions
@@ -46,21 +47,22 @@ uint16_t pingBuffer[PINGPONGSIZE];
 uint16_t pongBuffer[PINGPONGSIZE];
 EventGroupHandle_t event;
 SemaphoreHandle_t pitToogleSemaphore;
-//uint8_t valores[] = { 127, 135, 143, 151, 159, 167, 174, 182, 189, 196, 202,
-//		209, 215, 220, 226, 230, 235, 239, 243, 246, 248, 250, 252, 253,
-//		254, 254, 254, 253, 251, 249, 247, 244, 241, 237, 233, 228, 223,
-//		218, 212, 206, 199, 192, 185, 178, 170, 163, 155, 147, 139, 131,
-//		123, 115, 107, 99, 91, 84, 76, 69, 62, 55, 48, 42, 36, 31, 26, 21,
-//		17, 13, 10, 7, 5, 3, 1, 0, 0, 0, 1, 2, 4, 6, 8, 11, 15, 19, 24, 28,
-// 34, 39, 45, 52, 58, 65, 72, 80, 87, 95, 103, 111, 119, 127 };
+SemaphoreHandle_t stats_FTM_Semaphore;
+uint8_t valores[] = { 127, 135, 143, 151, 159, 167, 174, 182, 189, 196, 202,
+		209, 215, 220, 226, 230, 235, 239, 243, 246, 248, 250, 252, 253,
+		254, 254, 254, 253, 251, 249, 247, 244, 241, 237, 233, 228, 223,
+		218, 212, 206, 199, 192, 185, 178, 170, 163, 155, 147, 139, 131,
+		123, 115, 107, 99, 91, 84, 76, 69, 62, 55, 48, 42, 36, 31, 26, 21,
+		17, 13, 10, 7, 5, 3, 1, 0, 0, 0, 1, 2, 4, 6, 8, 11, 15, 19, 24, 28,
+ 34, 39, 45, 52, 58, 65, 72, 80, 87, 95, 103, 111, 119, 127 };
 
 /*******************************************************************************
 * Prototypes
 ******************************************************************************/
-void FTM_config(void);//TODO
-void PIT_config(void);//TODO
+void PIT_config(void);
 void DAC_config(void);
-
+void LED_config(void);
+void PIN_config(void);
 static void audio_player(void *arg);
 
 
